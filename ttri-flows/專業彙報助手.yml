@@ -1,0 +1,123 @@
+app:
+  description: 將彙報內容整理為SBAR結構
+  icon: office_worker
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: chat
+  name: 專業彙報助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.50@bcca1b734d9ae24ce8ddb9652bd872d69b91a3ffdb2ff8f8885c6f651da33cb0
+    version: null
+kind: app
+model_config:
+  agent_mode:
+    enabled: false
+    max_iteration: 10
+    strategy: function_call
+    tools: []
+  annotation_reply:
+    enabled: false
+  chat_prompt_config:
+    prompt:
+    - role: system
+      text: ''
+  completion_prompt_config:
+    conversation_histories_role:
+      assistant_prefix: ''
+      user_prefix: ''
+    prompt:
+      text: ''
+  dataset_configs:
+    datasets:
+      datasets: []
+    retrieval_model: multiple
+    top_k: 4
+  dataset_query_variable: ''
+  external_data_tools: []
+  file_upload:
+    allowed_file_extensions:
+    - .JPG
+    - .JPEG
+    - .PNG
+    - .GIF
+    - .WEBP
+    - .SVG
+    - .MP4
+    - .MOV
+    - .MPEG
+    - .WEBM
+    allowed_file_types: []
+    allowed_file_upload_methods:
+    - remote_url
+    - local_file
+    enabled: false
+    image:
+      detail: high
+      enabled: false
+      number_limits: 3
+      transfer_methods:
+      - remote_url
+      - local_file
+    number_limits: 3
+  model:
+    completion_params:
+      stop: []
+    mode: chat
+    name: google/gemma-4-E4B-it
+    provider: langgenius/openai_api_compatible/openai_api_compatible
+  more_like_this:
+    enabled: false
+  opening_statement: ''
+  pre_prompt: '# Role
+
+    你是一位高效能的專案幕僚。
+
+
+    # Task
+
+    請將我提供的凌亂資訊，套用 SBAR 模型，潤飾成能在 3 分鐘內向長官報告完畢的精煉講稿/短文。
+
+
+    # Output Structure
+
+    1. 現況 (Situation)：目前發生了什麼事？（精簡為一句話）
+
+    2. 背景 (Background)：關鍵背景與數據是什麼？（只保留與現況絕對相關的事實）
+
+    3. 評估 (Assessment)：你的專業判斷是什麼？（核心問題在哪？）
+
+    4. 建議 (Recommendation)：你建議長官現在採取什麼行動？
+
+
+    # Input Context
+
+    {{context}}
+
+    '
+  prompt_type: simple
+  retriever_resource:
+    enabled: true
+  sensitive_word_avoidance:
+    config: {}
+    enabled: false
+    type: ''
+  speech_to_text:
+    enabled: false
+  suggested_questions: []
+  suggested_questions_after_answer:
+    enabled: false
+  text_to_speech:
+    enabled: false
+    language: ''
+    voice: ''
+  user_input_form:
+  - paragraph:
+      default: ''
+      label: 彙報內容
+      required: true
+      variable: context
+version: 0.6.0

@@ -1,0 +1,831 @@
+app:
+  description: 以自然語言查詢同仁請假資訊，支援日期、相對日期與姓名條件
+  icon: calendar
+  icon_background: '#E0F2FE'
+  icon_type: emoji
+  mode: workflow
+  name: 同仁請假查詢
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.50@bcca1b734d9ae24ce8ddb9652bd872d69b91a3ffdb2ff8f8885c6f651da33cb0
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: ''
+    id: leave-api-base-url
+    name: LEAVE_API_BASE_URL
+    selector:
+    - env
+    - LEAVE_API_BASE_URL
+    value: http://172.16.80.181:8080
+    value_type: string
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: question-classifier
+      id: start-source-classify_intent-target
+      source: start
+      sourceHandle: source
+      target: classify_intent
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: parameter-extractor
+      id: classify_intent-leave_lookup-extract_leave_parameters-target
+      source: classify_intent
+      sourceHandle: leave_lookup
+      target: extract_leave_parameters
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: code
+      id: classify_intent-clarification-clarify_intent_response-target
+      source: classify_intent
+      sourceHandle: clarification
+      target: clarify_intent_message
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: code
+      id: classify_intent-unsupported-unsupported_intent_response-target
+      source: classify_intent
+      sourceHandle: unsupported
+      target: unsupported_intent_message
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: clarify_intent_message-source-clarify_intent_response-target
+      source: clarify_intent_message
+      sourceHandle: source
+      target: clarify_intent_response
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: unsupported_intent_message-source-unsupported_intent_response-target
+      source: unsupported_intent_message
+      sourceHandle: source
+      target: unsupported_intent_response
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: parameter-extractor
+        targetType: code
+      id: extract_leave_parameters-source-normalize_parameters-target
+      source: extract_leave_parameters
+      sourceHandle: source
+      target: normalize_parameters
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: normalize_parameters-source-check_required_parameters-target
+      source: normalize_parameters
+      sourceHandle: source
+      target: check_required_parameters
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: end
+      id: check_required_parameters-true-missing_parameters_response-target
+      source: check_required_parameters
+      sourceHandle: 'true'
+      target: missing_parameters_response
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: check_required_parameters-false-leave_api_request-target
+      source: check_required_parameters
+      sourceHandle: 'false'
+      target: leave_api_request
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: leave_api_request-source-format_leave_result-target
+      source: leave_api_request
+      sourceHandle: source
+      target: format_leave_result
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: format_leave_result-source-polish_leave_answer-target
+      source: format_leave_result
+      sourceHandle: source
+      target: polish_leave_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: polish_leave_answer-source-end-target
+      source: polish_leave_answer
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: 請輸入自然語言查詢，例如「查明天有誰請假」或「李明哲明天有沒有請假」。
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - default: ''
+          hint: 可輸入日期、相對日期、姓名或部門，例如：查明天有誰請假。
+          label: 查詢同仁請假資訊
+          max_length: 256
+          options: []
+          placeholder: 查明天有誰請假
+          required: true
+          type: text-input
+          variable: query
+      height: 171
+      id: start
+      position:
+        x: 30
+        y: 260
+      positionAbsolute:
+        x: 30
+        y: 260
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        classes:
+        - id: leave_lookup
+          name: leave_lookup
+        - id: clarification
+          name: clarification
+        - id: unsupported
+          name: unsupported
+        desc: 判斷使用者是否在查詢請假資訊。
+        instruction: '請只輸出最適合的分類：
+
+          - leave_lookup：使用者想查詢同仁、自己、某人、某部門在某日期或日期區間是否請假，包含「查明天有誰請假」、「李明哲明天有沒有請假」。
+
+          - clarification：使用者在問這個工具需要什麼條件，例如「你想查詢誰」、「要怎麼查」。
+
+          - unsupported：不是請假查詢，也不是詢問如何查請假。'
+        model:
+          completion_params:
+            temperature: 0
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        query_variable_selector:
+        - start
+        - query
+        selected: false
+        title: 判斷查詢意圖
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 247
+      id: classify_intent
+      position:
+        x: 334
+        y: 260
+      positionAbsolute:
+        x: 334
+        y: 260
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 從自然語言抽出日期、相對日期與人名。
+        instruction: 請從使用者問題抽取請假查詢條件。today/tomorrow/day_after_tomorrow/yesterday 請放在
+          relative_date；明確日期請用 YYYY-MM-DD。若沒有某欄位請回傳空字串。不要自行猜姓名。
+        memory: null
+        model:
+          completion_params:
+            temperature: 0
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        parameters:
+        - description: 起始日期，格式 YYYY-MM-DD；若使用者只說明天/今天，保持空字串。
+          name: from_date
+          required: false
+          type: string
+        - description: 結束日期，格式 YYYY-MM-DD；若使用者只說明天/今天，保持空字串。
+          name: to_date
+          required: false
+          type: string
+        - description: 相對日期，只能是 today、tomorrow、day_after_tomorrow、yesterday 或空字串。
+          name: relative_date
+          required: false
+          type: string
+        - description: 使用者指定要查詢的同仁姓名；若是查所有人，保持空字串。
+          name: target_person
+          required: false
+          type: string
+        query:
+        - start
+        - query
+        reasoning_mode: function_call
+        selected: false
+        title: 抽取查詢參數
+        type: parameter-extractor
+        vision:
+          enabled: false
+      height: 131
+      id: extract_leave_parameters
+      position:
+        x: 638
+        y: 160
+      positionAbsolute:
+        x: 638
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "from datetime import datetime, timedelta, timezone\nimport re\n\n\n\
+          def _clean(value):\n    if value is None:\n        return ''\n    return\
+          \ str(value).strip()\n\n\ndef _valid_date(value):\n    text = _clean(value)\n\
+          \    if not re.fullmatch(r'\\d{4}-\\d{2}-\\d{2}', text):\n        return\
+          \ ''\n    try:\n        datetime.strptime(text, '%Y-%m-%d')\n        return\
+          \ text\n    except Exception:\n        return ''\n\n\ndef _relative_date(query,\
+          \ relative_date):\n    text = (_clean(relative_date) or '').lower()\n  \
+          \  if text in {'today', 'tomorrow', 'day_after_tomorrow', 'yesterday'}:\n\
+          \        return text\n    query_text = _clean(query)\n    if '後天' in query_text:\n\
+          \        return 'day_after_tomorrow'\n    if '明天' in query_text or '明日'\
+          \ in query_text:\n        return 'tomorrow'\n    if '昨天' in query_text or\
+          \ '昨日' in query_text:\n        return 'yesterday'\n    if '今天' in query_text\
+          \ or '今日' in query_text:\n        return 'today'\n    return ''\n\n\ndef\
+          \ _date_from_relative(relative_date):\n    today = datetime.now(timezone(timedelta(hours=8))).date()\n\
+          \    offsets = {\n        'yesterday': -1,\n        'today': 0,\n      \
+          \  'tomorrow': 1,\n        'day_after_tomorrow': 2,\n    }\n    if relative_date\
+          \ not in offsets:\n        return ''\n    return (today + timedelta(days=offsets[relative_date])).isoformat()\n\
+          \n\ndef _date_from_query(query):\n    match = re.search(r'(20\\d{2})[-/](\\\
+          d{1,2})[-/](\\d{1,2})', _clean(query))\n    if not match:\n        return\
+          \ ''\n    year, month, day = match.groups()\n    try:\n        return datetime(int(year),\
+          \ int(month), int(day)).date().isoformat()\n    except Exception:\n    \
+          \    return ''\n\n\ndef main(query: str, from_date: str, to_date: str, relative_date:\
+          \ str, target_person: str) -> dict:\n    normalized_relative = _relative_date(query,\
+          \ relative_date)\n    relative_resolved_date = _date_from_relative(normalized_relative)\n\
+          \    explicit_query_date = _date_from_query(query)\n\n    start_date = _valid_date(from_date)\
+          \ or relative_resolved_date or explicit_query_date\n    end_date = _valid_date(to_date)\
+          \ or start_date\n    person = _clean(target_person)\n\n    needs_clarification\
+          \ = not bool(start_date and end_date)\n    if needs_clarification:\n   \
+          \     summary = '請告訴我要查詢哪一天或日期區間，例如「查明天有誰請假」或「查 2026-05-21 有誰請假」。'\n   \
+          \ else:\n        target_text = person if person else '所有同仁'\n        summary\
+          \ = f'已判斷查詢條件：{start_date} 至 {end_date}，查詢對象：{target_text}。'\n\n    return\
+          \ {\n        'from_date': start_date,\n        'to_date': end_date,\n  \
+          \      'target_person': person,\n        'relative_date': normalized_relative,\n\
+          \        'needs_clarification': needs_clarification,\n        'summary':\
+          \ summary,\n    }\n"
+        code_language: python3
+        desc: 補齊相對日期並判斷是否需要追問。
+        outputs:
+          from_date:
+            children: null
+            type: string
+          needs_clarification:
+            children: null
+            type: boolean
+          relative_date:
+            children: null
+            type: string
+          summary:
+            children: null
+            type: string
+          target_person:
+            children: null
+            type: string
+          to_date:
+            children: null
+            type: string
+        selected: false
+        title: 補齊與驗證參數
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+        - value_selector:
+          - extract_leave_parameters
+          - from_date
+          value_type: string
+          variable: from_date
+        - value_selector:
+          - extract_leave_parameters
+          - to_date
+          value_type: string
+          variable: to_date
+        - value_selector:
+          - extract_leave_parameters
+          - relative_date
+          value_type: string
+          variable: relative_date
+        - value_selector:
+          - extract_leave_parameters
+          - target_person
+          value_type: string
+          variable: target_person
+      height: 79
+      id: normalize_parameters
+      position:
+        x: 942
+        y: 160
+      positionAbsolute:
+        x: 942
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: missing-date-condition
+            value: 'true'
+            varType: boolean
+            variable_selector:
+            - normalize_parameters
+            - needs_clarification
+          id: 'true'
+          logical_operator: and
+        desc: 缺日期就追問；日期足夠才查 API。
+        selected: false
+        title: 是否需要追問
+        type: if-else
+      height: 175
+      id: check_required_parameters
+      position:
+        x: 1246
+        y: 160
+      positionAbsolute:
+        x: 1246
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: ''
+          type: none
+        desc: 呼叫請假查詢 API。
+        headers: ''
+        method: GET
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 30
+          write: 30
+        title: 查詢請假 API
+        type: http-request
+        url: '{{#env.LEAVE_API_BASE_URL#}}/api/leave/range?from={{#normalize_parameters.from_date#}}&to={{#normalize_parameters.to_date#}}'
+      height: 193
+      id: leave_api_request
+      position:
+        x: 1550
+        y: 160
+      positionAbsolute:
+        x: 1550
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\n\ndef _text(value):\n    if value is None:\n       \
+          \ return '-'\n    text = str(value).strip()\n    return text if text else\
+          \ '-'\n\n\ndef _matches_target(person, target_person):\n    target = _text(target_person)\n\
+          \    if target == '-':\n        return True\n    fields = [\n        person.get('employeeName'),\n\
+          \        person.get('employeeId'),\n        person.get('department'),\n\
+          \    ]\n    return any(target in _text(field) for field in fields)\n\n\n\
+          def main(status_code: int, body: str, from_date: str, to_date: str, target_person:\
+          \ str) -> dict:\n    raw_json = body if isinstance(body, str) else json.dumps(body,\
+          \ ensure_ascii=False)\n\n    try:\n        status = int(status_code)\n \
+          \   except Exception:\n        status = 0\n\n    if status != 200:\n   \
+          \     return {\n            'summary': f'請假查詢 API 回應失敗（HTTP {status}）。',\n\
+          \            'count': 0,\n            'people': [],\n            'raw_json':\
+          \ raw_json,\n        }\n\n    try:\n        payload = json.loads(raw_json)\n\
+          \    except Exception:\n        return {\n            'summary': '請假查詢 API\
+          \ 回傳內容不是有效 JSON。',\n            'count': 0,\n            'people': [],\n\
+          \            'raw_json': raw_json,\n        }\n\n    people = payload.get('people')\
+          \ or []\n    if not isinstance(people, list):\n        people = []\n\n \
+          \   filtered_people = [person for person in people if isinstance(person,\
+          \ dict) and _matches_target(person, target_person)]\n    count = len(filtered_people)\n\
+          \    truncated = bool(payload.get('truncated'))\n    target_text = _text(target_person)\n\
+          \    from_text = _text(from_date or payload.get('from'))\n    to_text =\
+          \ _text(to_date or payload.get('to'))\n\n    if not filtered_people:\n \
+          \       subject = '同仁' if target_text == '-' else target_text\n        summary\
+          \ = f'查詢區間 {from_text} 至 {to_text} 內，沒有找到 {subject} 的請假資料。'\n        if\
+          \ truncated:\n            summary += '\\n\\n注意：原始結果可能被截斷，請縮小查詢區間或確認 API\
+          \ 限制。'\n        return {\n            'summary': summary,\n            'count':\
+          \ count,\n            'people': filtered_people,\n            'raw_json':\
+          \ raw_json,\n        }\n\n    lines = [\n        '## 同仁請假查詢結果',\n      \
+          \  f'- 查詢區間：{from_text} 至 {to_text}',\n        f'- 查詢對象：{target_text if\
+          \ target_text != \"-\" else \"所有同仁\"}',\n        f'- 符合筆數：{count}',\n  \
+          \  ]\n    if truncated:\n        lines.append('- 注意：原始結果可能被截斷，請縮小查詢區間或確認\
+          \ API 限制。')\n\n    lines.extend([\n        '',\n        '| 姓名 | 部門 | 假別\
+          \ | 起始 | 結束 | 狀態 |',\n        '|---|---|---|---|---|---|',\n    ])\n\n \
+          \   for person in filtered_people:\n        lines.append(\n            '|\
+          \ {name} | {department} | {leave_type} | {start} | {end} | {status} |'.format(\n\
+          \                name=_text(person.get('employeeName')),\n             \
+          \   department=_text(person.get('department')),\n                leave_type=_text(person.get('leaveType')),\n\
+          \                start=_text(person.get('start')),\n                end=_text(person.get('end')),\n\
+          \                status=_text(person.get('status')),\n            )\n  \
+          \      )\n\n    return {\n        'summary': '\\n'.join(lines),\n      \
+          \  'count': count,\n        'people': filtered_people,\n        'raw_json':\
+          \ raw_json,\n    }\n"
+        code_language: python3
+        desc: 將 API 回傳 JSON 轉成中文摘要，並依姓名/部門/員編篩選。
+        outputs:
+          count:
+            children: null
+            type: number
+          people:
+            children: null
+            type: array[object]
+          raw_json:
+            children: null
+            type: string
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 整理查詢結果
+        type: code
+        variables:
+        - value_selector:
+          - leave_api_request
+          - status_code
+          value_type: number
+          variable: status_code
+        - value_selector:
+          - leave_api_request
+          - body
+          value_type: string
+          variable: body
+        - value_selector:
+          - normalize_parameters
+          - from_date
+          value_type: string
+          variable: from_date
+        - value_selector:
+          - normalize_parameters
+          - to_date
+          value_type: string
+          variable: to_date
+        - value_selector:
+          - normalize_parameters
+          - target_person
+          value_type: string
+          variable: target_person
+      height: 95
+      id: format_leave_result
+      position:
+        x: 1854
+        y: 160
+      positionAbsolute:
+        x: 1854
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - normalize_parameters
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 缺參數追問
+        type: end
+      height: 88
+      id: missing_parameters_response
+      position:
+        x: 1550
+        y: 360
+      positionAbsolute:
+        x: 1550
+        y: 360
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 將查詢結果整理成同仁可直接閱讀的自然語言回覆。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: polish-system
+          role: system
+          text: 你是公司內部請假查詢助手。請把輸入內容潤飾成簡潔、正式、自然的繁體中文回覆。只根據輸入資料回答，不要新增不存在的人名、日期、假別或推論。不要輸出
+            JSON、原始資料、除錯資訊或處理過程。若有表格，保留表格即可。
+        - id: polish-user
+          role: user
+          text: '使用者問題：{{#start.query#}}
+
+
+            查詢結果：
+
+            {{#format_leave_result.summary#}}'
+        selected: true
+        title: 潤飾回覆
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 131
+      id: polish_leave_answer
+      position:
+        x: 2158
+        y: 160
+      positionAbsolute:
+        x: 2158
+        y: 160
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - polish_leave_answer
+          - text
+          value_type: string
+          variable: summary
+        selected: false
+        title: End
+        type: end
+      height: 88
+      id: end
+      position:
+        x: 2462
+        y: 160
+      positionAbsolute:
+        x: 2462
+        y: 160
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(query: str) -> dict:\n    return {\n        'summary': '請直接告訴我要查哪一天或哪個日期區間，也可以加上姓名。例：\\\
+          n\\n- 查明天有誰請假\\n- 查 2026-05-21 有誰請假\\n- 李明哲明天有沒有請假',\n    }\n"
+        code_language: python3
+        desc: 回覆可接受的查詢方式。
+        outputs:
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 查詢說明訊息
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+      height: 79
+      id: clarify_intent_message
+      position:
+        x: 638
+        y: 420
+      positionAbsolute:
+        x: 638
+        y: 420
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(query: str) -> dict:\n    return {\n        'summary': '這個工作流目前只支援查詢同仁請假資訊。請改用這類問法：查明天有誰請假、查\
+          \ 2026-05-21 有誰請假、李明哲明天有沒有請假。',\n    }\n"
+        code_language: python3
+        desc: 回覆不支援的查詢。
+        outputs:
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 不支援訊息
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+      height: 79
+      id: unsupported_intent_message
+      position:
+        x: 638
+        y: 620
+      positionAbsolute:
+        x: 638
+        y: 620
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - clarify_intent_message
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 查詢條件說明
+        type: end
+      height: 88
+      id: clarify_intent_response
+      position:
+        x: 638
+        y: 420
+      positionAbsolute:
+        x: 638
+        y: 420
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - unsupported_intent_message
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 不支援的問題
+        type: end
+      height: 88
+      id: unsupported_intent_response
+      position:
+        x: 638
+        y: 620
+      positionAbsolute:
+        x: 638
+        y: 620
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -808.2999999999997
+      y: 75.20000000000033
+      zoom: 0.6999999999999995
+  rag_pipeline_variables: []
