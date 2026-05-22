@@ -25,6 +25,14 @@ workflow:
     - LEAVE_API_BASE_URL
     value: http://172.16.80.181:8080
     value_type: string
+  - description: notes_api_service Bearer token. 請填入與服務端 NOTES_SERVICE_TOKEN 相同的值。
+    id: leave-api-bearer-token
+    name: LEAVE_API_TOKEN
+    selector:
+    - env
+    - LEAVE_API_TOKEN
+    value: ''
+    value_type: secret
   features:
     file_upload:
       allowed_file_extensions:
@@ -232,9 +240,9 @@ workflow:
       zIndex: 0
     nodes:
     - data:
-        desc: 請輸入自然語言查詢，例如「查明天有誰請假」或「李明哲明天有沒有請假」。
+        desc: 使用者只要輸入一句自然語言，後續節點會判斷意圖並抽取查詢條件。
         selected: false
-        title: Start
+        title: 自然語言查詢
         type: start
         variables:
         - default: ''
@@ -267,7 +275,7 @@ workflow:
           name: clarification
         - id: unsupported
           name: unsupported
-        desc: 判斷使用者是否在查詢請假資訊。
+        desc: 拆解使用者問題的核心意圖，判斷是否要進入請假查詢流程。
         instruction: '請只輸出最適合的分類：
 
           - leave_lookup：使用者想查詢同仁、自己、某人、某部門在某日期或日期區間是否請假，包含「查明天有誰請假」、「李明哲明天有沒有請假」。
@@ -490,7 +498,7 @@ workflow:
             value: ''
           type: none
         desc: 呼叫請假查詢 API。
-        headers: ''
+        headers: 'Authorization: Bearer {{#env.LEAVE_API_TOKEN#}}'
         method: GET
         params: ''
         retry_config:

@@ -1,0 +1,1376 @@
+app:
+  description: 以自然語言查詢同仁聯絡資訊，支援姓名、分機、員編、帳號、Email 與部門查詢
+  icon: face_with_monocle
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: 聯絡資訊助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.50@bcca1b734d9ae24ce8ddb9652bd872d69b91a3ffdb2ff8f8885c6f651da33cb0
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: Employee Directory API base URL. 若 Dify 在 Docker 內執行，請設定為容器可連線的 service
+      URL，不要使用只能指向容器自己的 127.0.0.1。
+    id: employee-directory-api-base-url
+    name: EMPLOYEE_DIRECTORY_API_URL
+    selector:
+    - env
+    - EMPLOYEE_DIRECTORY_API_URL
+    value: http://127.0.0.1:8010
+    value_type: string
+  - description: Employee Directory API Bearer token. 若 API 尚未啟用驗證，請留空；啟用後請在 Dify
+      環境變數填入 token。
+    id: employee-directory-api-bearer-token
+    name: EMPLOYEE_DIRECTORY_API_TOKEN
+    selector:
+    - env
+    - EMPLOYEE_DIRECTORY_API_TOKEN
+    value: ''
+    value_type: secret
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: 請直接輸入自然語言問題，例如「王小明的分機是多少？」、「王小明的 Email 是什麼？」或「資訊處有哪些同仁？」。
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+    - 王小明的分機是多少？
+    - 分機 5678 是誰？
+    - 王小明的 Email 是什麼？
+    - 資訊處有哪些同仁？
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: parameter-extractor
+      id: start-source-extract_lookup_parameters-target
+      source: start
+      sourceHandle: source
+      target: extract_lookup_parameters
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: parameter-extractor
+        targetType: code
+      id: extract_lookup_parameters-source-normalize_lookup-target
+      source: extract_lookup_parameters
+      sourceHandle: source
+      target: normalize_lookup
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: normalize_lookup-source-check_lookup_parameters-target
+      source: normalize_lookup
+      sourceHandle: source
+      target: check_lookup_parameters
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: end
+      id: check_lookup_parameters-true-missing_lookup_response-target
+      source: check_lookup_parameters
+      sourceHandle: 'true'
+      target: missing_lookup_response
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: if-else
+      id: check_lookup_parameters-false-route_lookup_source-target
+      source: check_lookup_parameters
+      sourceHandle: 'false'
+      target: route_lookup_source
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: route_lookup_source-true-prepare_employee_api_request-target
+      source: route_lookup_source
+      sourceHandle: 'true'
+      target: prepare_employee_api_request
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: prepare_employee_api_request-source-route_employee_api_endpoint-target
+      source: prepare_employee_api_request
+      sourceHandle: source
+      target: route_employee_api_endpoint
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: route_employee_api_endpoint-true-employee_directory_get_by_id_request-target
+      source: route_employee_api_endpoint
+      sourceHandle: 'true'
+      target: employee_directory_get_by_id_request
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: route_employee_api_endpoint-false-employee_directory_api_request-target
+      source: route_employee_api_endpoint
+      sourceHandle: 'false'
+      target: employee_directory_api_request
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: route_lookup_source-false-retrieve_colleague_directory-target
+      source: route_lookup_source
+      sourceHandle: 'false'
+      target: retrieve_colleague_directory
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: retrieve_colleague_directory-source-polish_directory_answer-target
+      source: retrieve_colleague_directory
+      sourceHandle: source
+      target: polish_directory_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: employee_directory_api_request-source-format_employee_api_result-target
+      source: employee_directory_api_request
+      sourceHandle: source
+      target: format_employee_api_result
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: employee_directory_get_by_id_request-source-format_employee_by_id_result-target
+      source: employee_directory_get_by_id_request
+      sourceHandle: source
+      target: format_employee_by_id_result
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: format_employee_by_id_result-source-polish_employee_by_id_answer-target
+      source: format_employee_by_id_result
+      sourceHandle: source
+      target: polish_employee_by_id_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: polish_employee_by_id_answer-source-employee_by_id_end-target
+      source: polish_employee_by_id_answer
+      sourceHandle: source
+      target: employee_by_id_end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: format_employee_api_result-source-polish_employee_answer-target
+      source: format_employee_api_result
+      sourceHandle: source
+      target: polish_employee_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: polish_employee_answer-source-employee_api_end-target
+      source: polish_employee_answer
+      sourceHandle: source
+      target: employee_api_end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: polish_directory_answer-source-end-target
+      source: polish_directory_answer
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: 請輸入你要查詢的同仁聯絡資訊，例如「王小明的分機是多少？」、「王小明的 Email 是什麼？」或「資訊處有哪些同仁？」。
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - default: ''
+          hint: 可輸入姓名、分機、員編、Email、部門或完整問題，例如：王小明的 Email 是什麼？
+          label: 查詢同仁聯絡資訊
+          max_length: 256
+          options: []
+          placeholder: 王小明的 Email 是什麼？
+          required: true
+          type: text-input
+          variable: query
+      height: 187
+      id: start
+      position:
+        x: 0
+        y: 0
+      positionAbsolute:
+        x: 0
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 從自然語言抽出查詢方向、姓名、分機與 Employee Directory API 條件。
+        instruction: '請從使用者問題抽取同仁聯絡資訊查詢條件，只回傳參數，不要回答問題。
+
+          判斷規則：
+
+          - 使用者提供姓名、想查分機或電話時，query_direction = name_to_extension。
+
+          - 使用者提供分機號碼、想知道是誰或哪位同仁時，query_direction = extension_to_name。
+
+          - 使用者想查 Email、電子郵件、部門、員編、員工編號、帳號、同仁資料、聯絡資訊或某部門同仁清單時，query_direction = employee_info。
+
+          - 使用者只是在問這個工具怎麼用時，query_direction = clarification。
+
+          - 不是同仁聯絡資訊查詢時，query_direction = unsupported。
+
+          抽取規則：
+
+          - employee_name 只放同仁姓名，不要放「同仁」、「分機」、「電話」等普通詞。
+
+          - extension_number 只放數字，移除空白、#、分機等文字。
+
+          - employee_id 只放員編或員工編號，不要放「員編」兩字。
+
+          - email 只放 Email 或 Email 片段。
+
+          - department 只放部門名稱，不要放「有哪些同仁」、「查詢」等普通詞。
+
+          - requested_fields 用逗號列出使用者要查的欄位，例如 email,department,employeeId,employeeAccount,name；若只是要完整同仁資料，填
+          all。
+
+          - 不確定的欄位請回傳空字串，不要猜。'
+        memory: null
+        model:
+          completion_params:
+            temperature: 0
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        parameters:
+        - description: 查詢方向，只能是 name_to_extension、extension_to_name、employee_info、clarification、unsupported
+            或空字串。
+          name: query_direction
+          required: false
+          type: string
+        - description: 使用者指定的同仁姓名；若沒有姓名請回傳空字串。
+          name: employee_name
+          required: false
+          type: string
+        - description: 使用者指定的分機號碼；只保留數字，若沒有分機請回傳空字串。
+          name: extension_number
+          required: false
+          type: string
+        - description: 使用者指定的員編或員工編號；若沒有員編請回傳空字串。
+          name: employee_id
+          required: false
+          type: string
+        - description: 使用者指定的 Email 或 Email 片段；若沒有 Email 請回傳空字串。
+          name: email
+          required: false
+          type: string
+        - description: 使用者指定的部門名稱；若沒有部門請回傳空字串。
+          name: department
+          required: false
+          type: string
+        - description: 使用者想看的欄位，以逗號分隔，例如 email,department；若不確定請回傳空字串。
+          name: requested_fields
+          required: false
+          type: string
+        query:
+        - start
+        - query
+        reasoning_mode: function_call
+        selected: false
+        title: 抽取查詢參數
+        type: parameter-extractor
+        vision:
+          enabled: false
+      height: 131
+      id: extract_lookup_parameters
+      position:
+        x: 342
+        y: 59.16666666666666
+      positionAbsolute:
+        x: 342
+        y: 59.16666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import re\nfrom urllib.parse import quote\n\n\nVALID_DIRECTIONS = {'name_to_extension',\
+          \ 'extension_to_name', 'employee_info', 'clarification', 'unsupported'}\n\
+          \n\ndef _clean(value):\n    if value is None:\n        return ''\n    return\
+          \ str(value).strip()\n\n\ndef _strip_words(text, words):\n    for word in\
+          \ words:\n        text = text.replace(word, '')\n    return text.strip('\
+          \ 的：:，,。?？')\n\n\ndef _clean_name(value):\n    return _strip_words(_clean(value),\
+          \ [\n        '同仁', '員工', '姓名', '名字', '分機', '電話', 'email', 'Email', '電子郵件',\n\
+          \        '部門', '單位', '員編', '員工編號', '帳號', '聯絡資訊', '同仁資料', '請問', '幫我查', '查詢',\n\
+          \    ])\n\n\ndef _clean_extension(value):\n    return ''.join(re.findall(r'\\\
+          d+', _clean(value)))\n\n\ndef _extension_from_query(query):\n    text =\
+          \ _clean(query)\n    match = re.search(r'(?:分機|ext\\.?|extension|電話)\\s*#?\\\
+          s*(\\d{3,6})', text, flags=re.IGNORECASE)\n    return match.group(1) if\
+          \ match else ''\n\n\ndef _employee_id_from_query(query):\n    text = _clean(query)\n\
+          \    match = re.search(r'(?:員編|員工編號|employee\\s*id)\\s*[:：#]?\\s*([A-Za-z0-9._-]{1,64})',\
+          \ text, flags=re.IGNORECASE)\n    return match.group(1) if match else ''\n\
+          \n\ndef _email_from_query(query):\n    text = _clean(query)\n    match =\
+          \ re.search(r'[\\w.+-]+@[\\w.-]+', text)\n    return match.group(0) if match\
+          \ else ''\n\n\ndef _department_from_query(query):\n    text = _clean(query)\n\
+          \    match = re.search(r'([\\u4e00-\\u9fffA-Za-z0-9_-]{2,32}(?:處|部|組|科|室|中心|課))',\
+          \ text)\n    return match.group(1) if match else ''\n\n\ndef _name_from_query(query):\n\
+          \    text = _clean(query)\n    text = re.sub(r'\\d{3,6}', '', text)\n  \
+          \  text = re.sub(r'[\\w.+-]+@[\\w.-]+', '', text)\n    return _strip_words(text,\
+          \ [\n        '的分機是多少', '分機是多少', '分機是什麼', '電話是多少', '電話是什麼',\n        '的Email是什麼',\
+          \ 'Email是什麼', 'email是什麼', '電子郵件是什麼',\n        '在哪個部門', '是哪個部門', '部門是什麼',\
+          \ '員編是多少', '帳號是什麼',\n        '有哪些同仁', '同仁清單', '聯絡資訊', '同仁資料', '分機', '電話',\
+          \ 'Email',\n        'email', '電子郵件', '部門', '單位', '員編', '員工編號', '帳號',\n \
+          \       '請問', '幫我查', '查詢', '是多少', '是什麼',\n    ])\n\n\ndef _requested_fields(query,\
+          \ requested_fields):\n    normalized = _clean(requested_fields)\n    if\
+          \ normalized:\n        return normalized\n    text = _clean(query)\n   \
+          \ fields = []\n    if any(word in text for word in ['Email', 'email', '電子郵件',\
+          \ '信箱']):\n        fields.append('email')\n    if any(word in text for word\
+          \ in ['部門', '單位']):\n        fields.append('department')\n    if any(word\
+          \ in text for word in ['員編', '員工編號']):\n        fields.append('employeeId')\n\
+          \    if '帳號' in text:\n        fields.append('employeeAccount')\n    if\
+          \ any(word in text for word in ['聯絡資訊', '同仁資料', '完整資料']):\n        fields.append('all')\n\
+          \    return ','.join(fields)\n\n\ndef _direction_from_query(query, direction,\
+          \ employee_name, extension_number, employee_id, email, department):\n  \
+          \  normalized = _clean(direction)\n    if normalized in VALID_DIRECTIONS:\n\
+          \        return normalized\n    text = _clean(query)\n    if any(word in\
+          \ text for word in ['怎麼查', '怎麼用', '可以查什麼']):\n        return 'clarification'\n\
+          \    if employee_id or email or department or any(word in text for word\
+          \ in ['Email', 'email', '電子郵件', '部門', '單位', '員編', '員工編號', '帳號', '聯絡資訊',\
+          \ '同仁資料']):\n        return 'employee_info'\n    if extension_number or\
+          \ re.search(r'(?:分機|ext\\.?|extension|電話)\\s*#?\\s*\\d{3,6}', text, flags=re.IGNORECASE):\n\
+          \        return 'extension_to_name'\n    if employee_name or any(word in\
+          \ text for word in ['分機', '電話']):\n        return 'name_to_extension'\n\
+          \    return 'unsupported'\n\n\ndef _api_path(employee_id, employee_name,\
+          \ email, department):\n    if employee_id:\n        return f'/v1/employees/{quote(employee_id)}'\n\
+          \    params = []\n    if employee_name:\n        params.append(f'name={quote(employee_name)}')\n\
+          \    if email:\n        params.append(f'email={quote(email)}')\n    if department:\n\
+          \        params.append(f'department={quote(department)}')\n    params.append('limit=10')\n\
+          \    return '/v1/employees/search?' + '&'.join(params)\n\n\ndef main(query:\
+          \ str, query_direction: str, employee_name: str, extension_number: str,\
+          \ employee_id: str, email: str, department: str, requested_fields: str)\
+          \ -> dict:\n    name = _clean_name(employee_name)\n    extension = _clean_extension(extension_number)\n\
+          \    emp_id = _clean(employee_id) or _employee_id_from_query(query)\n  \
+          \  mail = _clean(email) or _email_from_query(query)\n    dept = _department_from_query(query)\
+          \ or _clean(department)\n    fields = _requested_fields(query,\
+          \ requested_fields)\n\n    if not extension:\n        extension = _extension_from_query(query)\n\
+          \    if not name and not dept:\n        name = _name_from_query(query)\n\
+          \n    direction = _direction_from_query(query, query_direction, name, extension,\
+          \ emp_id, mail, dept)\n    uses_employee_api = direction == 'employee_info'\n\
+          \n    if direction == 'extension_to_name':\n        lookup_value = extension\n\
+          \        retrieval_query = f'分機 {extension} 姓名 同仁'\n        api_path_and_query\
+          \ = ''\n        needs_clarification = not bool(extension)\n        summary\
+          \ = '請提供要反查的分機號碼，例如「分機 5678 是誰？」。'\n    elif direction == 'name_to_extension':\n\
+          \        lookup_value = name\n        retrieval_query = f'{name} 分機 電話'\n\
+          \        api_path_and_query = ''\n        needs_clarification = not bool(name)\n\
+          \        summary = '請提供要查詢的同仁姓名，例如「王小明的分機是多少？」。'\n    elif direction ==\
+          \ 'employee_info':\n        lookup_value = emp_id or name or mail or dept\n\
+          \        retrieval_query = ''\n        api_path_and_query = _api_path(emp_id,\
+          \ name, mail, dept)\n        needs_clarification = not bool(emp_id or name\
+          \ or mail or dept)\n        summary = '請提供姓名、員編、Email 或部門，例如「王小明的 Email\
+          \ 是什麼？」或「資訊處有哪些同仁？」。'\n    elif direction == 'clarification':\n        lookup_value\
+          \ = ''\n        retrieval_query = ''\n        api_path_and_query = ''\n\
+          \        needs_clarification = True\n        summary = '可以直接用自然語言查詢，例如「王小明的分機是多少？」、「王小明的\
+          \ Email 是什麼？」或「資訊處有哪些同仁？」。'\n    else:\n        lookup_value = ''\n    \
+          \    retrieval_query = ''\n        api_path_and_query = ''\n        needs_clarification\
+          \ = True\n        summary = '這個工作流目前支援同仁分機、姓名、員編、帳號、Email 與部門查詢。'\n\n  \
+          \  return {\n        'query_direction': direction,\n        'employee_name':\
+          \ name,\n        'extension_number': extension,\n        'employee_id':\
+          \ emp_id,\n        'email': mail,\n        'department': dept,\n       \
+          \ 'requested_fields': fields,\n        'lookup_value': lookup_value,\n \
+          \       'retrieval_query': retrieval_query,\n        'uses_employee_api': uses_employee_api,\n\
+          \        'needs_clarification': needs_clarification,\n        'summary':\
+          \ summary,\n    }\n"
+        code_language: python3
+        desc: 正規化抽取結果，補強分機/API 條件，並決定查詢資料來源。
+        outputs:
+          department:
+            children: null
+            type: string
+          email:
+            children: null
+            type: string
+          employee_id:
+            children: null
+            type: string
+          employee_name:
+            children: null
+            type: string
+          extension_number:
+            children: null
+            type: string
+          lookup_value:
+            children: null
+            type: string
+          needs_clarification:
+            children: null
+            type: boolean
+          query_direction:
+            children: null
+            type: string
+          requested_fields:
+            children: null
+            type: string
+          retrieval_query:
+            children: null
+            type: string
+          summary:
+            children: null
+            type: string
+          uses_employee_api:
+            children: null
+            type: boolean
+        selected: false
+        title: 補齊與驗證查詢條件
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+        - value_selector:
+          - extract_lookup_parameters
+          - query_direction
+          value_type: string
+          variable: query_direction
+        - value_selector:
+          - extract_lookup_parameters
+          - employee_name
+          value_type: string
+          variable: employee_name
+        - value_selector:
+          - extract_lookup_parameters
+          - extension_number
+          value_type: string
+          variable: extension_number
+        - value_selector:
+          - extract_lookup_parameters
+          - employee_id
+          value_type: string
+          variable: employee_id
+        - value_selector:
+          - extract_lookup_parameters
+          - email
+          value_type: string
+          variable: email
+        - value_selector:
+          - extract_lookup_parameters
+          - department
+          value_type: string
+          variable: department
+        - value_selector:
+          - extract_lookup_parameters
+          - requested_fields
+          value_type: string
+          variable: requested_fields
+      height: 95
+      id: normalize_lookup
+      position:
+        x: 684
+        y: 99.00000000000001
+      positionAbsolute:
+        x: 684
+        y: 99.00000000000001
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: missing-lookup-condition
+            value: 'true'
+            varType: boolean
+            variable_selector:
+            - normalize_lookup
+            - needs_clarification
+          id: 'true'
+          logical_operator: and
+        desc: 缺姓名、缺分機、缺 API 查詢條件或不是支援意圖時直接回覆說明。
+        selected: false
+        title: 是否需要追問
+        type: if-else
+      height: 191
+      id: check_lookup_parameters
+      position:
+        x: 1026
+        y: 66.83333333333334
+      positionAbsolute:
+        x: 1026
+        y: 66.83333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: employee-api-route-condition
+            value: 'true'
+            varType: boolean
+            variable_selector:
+            - normalize_lookup
+            - uses_employee_api
+          id: 'true'
+          logical_operator: and
+        desc: Employee Directory API 查員編、帳號、Email 與部門；知識庫查姓名與分機。
+        selected: false
+        title: 選擇查詢來源
+        type: if-else
+      height: 207
+      id: route_lookup_source
+      position:
+        x: 1388
+        y: 210.78333333333336
+      positionAbsolute:
+        x: 1388
+        y: 210.78333333333336
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: |
+          from urllib.parse import quote
+
+
+          def _clean(value):
+              if value is None:
+                  return ''
+              return str(value).strip()
+
+
+          def main(employee_id: str, employee_name: str, email: str, department: str) -> dict:
+              emp_id = _clean(employee_id)
+              name = _clean(employee_name)
+              mail = _clean(email)
+              dept = _clean(department)
+              uses_employee_id_endpoint = bool(emp_id and not name and not mail and not dept)
+
+              params = []
+              if emp_id and not uses_employee_id_endpoint:
+                  params.append(f'employeeId={quote(emp_id)}')
+              if name:
+                  params.append(f'name={quote(name)}')
+              if mail:
+                  params.append(f'email={quote(mail)}')
+              if dept:
+                  params.append(f'department={quote(dept)}')
+              params.append('limit=10')
+
+              return {
+                  'uses_employee_id_endpoint': uses_employee_id_endpoint,
+                  'employee_id_path': quote(emp_id),
+                  'employee_search_query': '&'.join(params),
+              }
+        code_language: python3
+        desc: 依 OpenAPI contract 明確選擇 getEmployeeById 或 searchEmployees endpoint。
+        outputs:
+          employee_id_path:
+            children: null
+            type: string
+          employee_search_query:
+            children: null
+            type: string
+          uses_employee_id_endpoint:
+            children: null
+            type: boolean
+        selected: false
+        title: 準備同仁資料 API 參數
+        type: code
+        variables:
+        - value_selector:
+          - normalize_lookup
+          - employee_id
+          value_type: string
+          variable: employee_id
+        - value_selector:
+          - normalize_lookup
+          - employee_name
+          value_type: string
+          variable: employee_name
+        - value_selector:
+          - normalize_lookup
+          - email
+          value_type: string
+          variable: email
+        - value_selector:
+          - normalize_lookup
+          - department
+          value_type: string
+          variable: department
+      height: 95
+      id: prepare_employee_api_request
+      position:
+        x: 1750
+        y: 123.93333333333334
+      positionAbsolute:
+        x: 1750
+        y: 123.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: employee-id-endpoint-route-condition
+            value: 'true'
+            varType: boolean
+            variable_selector:
+            - prepare_employee_api_request
+            - uses_employee_id_endpoint
+          id: 'true'
+          logical_operator: and
+        desc: 有單一員編時走 getEmployeeById；其他姓名、Email、部門條件走 searchEmployees。
+        selected: false
+        title: 選擇 Employee API endpoint
+        type: if-else
+      height: 191
+      id: route_employee_api_endpoint
+      position:
+        x: 2092
+        y: 123.93333333333334
+      positionAbsolute:
+        x: 2092
+        y: 123.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: ''
+          type: none
+        desc: 'OpenAPI operationId: getEmployeeById；GET /v1/employees/{employee_id}。'
+        headers: 'Authorization: Bearer {{#env.EMPLOYEE_DIRECTORY_API_TOKEN#}}'
+        method: GET
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 30
+          write: 30
+        title: 查詢同仁資料 API - getEmployeeById
+        type: http-request
+        url: '{{#env.EMPLOYEE_DIRECTORY_API_URL#}}/v1/employees/{{#prepare_employee_api_request.employee_id_path#}}'
+      height: 158
+      id: employee_directory_get_by_id_request
+      position:
+        x: 2434
+        y: 83.93333333333334
+      positionAbsolute:
+        x: 2434
+        y: 83.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: ''
+          type: none
+        desc: 'OpenAPI operationId: searchEmployees；GET /v1/employees/search，query 支援 employeeId、name、email、department、limit。'
+        headers: 'Authorization: Bearer {{#env.EMPLOYEE_DIRECTORY_API_TOKEN#}}'
+        method: GET
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: true
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 30
+          write: 30
+        title: 查詢同仁資料 API - searchEmployees
+        type: http-request
+        url: '{{#env.EMPLOYEE_DIRECTORY_API_URL#}}/v1/employees/search?{{#prepare_employee_api_request.employee_search_query#}}'
+      height: 158
+      id: employee_directory_api_request
+      position:
+        x: 1750
+        y: 163.93333333333334
+      positionAbsolute:
+        x: 1750
+        y: 163.93333333333334
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: |
+          import json
+
+
+          def _text(value):
+              if value is None:
+                  return '-'
+              text = str(value).strip()
+              return text if text else '-'
+
+
+          def _wanted_fields(requested_fields):
+              fields = [field.strip() for field in _text(requested_fields).split(',') if field.strip() and field.strip() != '-']
+              return set(fields)
+
+
+          def _employee_lines(employee, wanted):
+              field_map = [
+                  ('姓名', 'name', 'name'),
+                  ('員編', 'employeeId', 'employeeId'),
+                  ('帳號', 'employeeAccount', 'employeeAccount'),
+                  ('Email', 'email', 'email'),
+                  ('部門', 'department', 'department'),
+              ]
+              show_all = not wanted or 'all' in wanted
+              lines = []
+              for label, key, token in field_map:
+                  if show_all or token in wanted:
+                      lines.append(f'- {label}：{_text(employee.get(key))}')
+              return lines
+
+
+          def main(status_code: int, body: str, requested_fields: str, lookup_value: str) -> dict:
+              raw_json = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)
+              try:
+                  status = int(status_code)
+              except Exception:
+                  status = 0
+
+              if status == 404:
+                  return {'summary': '查不到符合的同仁資料。', 'result_count': 0, 'raw_json': raw_json}
+              if status == 401:
+                  return {'summary': '同仁資料 API 驗證失敗，請確認 Bearer token。', 'result_count': 0, 'raw_json': raw_json}
+              if status != 200:
+                  return {'summary': f'同仁資料 API 回應失敗（HTTP {status}）。', 'result_count': 0, 'raw_json': raw_json}
+
+              try:
+                  payload = json.loads(raw_json)
+              except Exception:
+                  return {'summary': '同仁資料 API 回傳內容不是有效 JSON。', 'result_count': 0, 'raw_json': raw_json}
+
+              if not isinstance(payload, dict):
+                  return {'summary': '同仁資料 API 回傳內容不是同仁物件。', 'result_count': 0, 'raw_json': raw_json}
+
+              wanted = _wanted_fields(requested_fields)
+              lines = [
+                  '## 同仁資料查詢結果',
+                  f'- API：GET /v1/employees/{{employee_id}}',
+                  f'- 查詢值：{_text(lookup_value)}',
+                  '- 符合筆數：1',
+                  '',
+              ]
+              lines.extend(_employee_lines(payload, wanted))
+              return {'summary': '\n'.join(lines).strip(), 'result_count': 1, 'raw_json': raw_json}
+        code_language: python3
+        desc: 整理 getEmployeeById 回傳的 EmployeeRecord。
+        outputs:
+          raw_json:
+            children: null
+            type: string
+          result_count:
+            children: null
+            type: number
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 整理同仁資料結果 - getEmployeeById
+        type: code
+        variables:
+        - value_selector:
+          - employee_directory_get_by_id_request
+          - status_code
+          value_type: number
+          variable: status_code
+        - value_selector:
+          - employee_directory_get_by_id_request
+          - body
+          value_type: string
+          variable: body
+        - value_selector:
+          - normalize_lookup
+          - requested_fields
+          value_type: string
+          variable: requested_fields
+        - value_selector:
+          - normalize_lookup
+          - lookup_value
+          value_type: string
+          variable: lookup_value
+      height: 95
+      id: format_employee_by_id_result
+      position:
+        x: 2776
+        y: 83.93333333333334
+      positionAbsolute:
+        x: 2776
+        y: 83.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 根據 getEmployeeById 結果產生自然語言答案。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: polish-employee-by-id-system
+          role: system
+          text: '你是公司內部聯絡資訊查詢助手。請只根據 Employee Directory API 的整理結果回答，不要猜測或新增不存在的姓名、員編、帳號、Email、部門或分機。輸出繁體中文，語氣簡潔正式。'
+        - id: polish-employee-by-id-user
+          role: user
+          text: '使用者問題：{{#start.query#}}
+
+
+            API 查詢結果：
+
+            {{#format_employee_by_id_result.summary#}}'
+        selected: false
+        title: 潤飾同仁資料回覆 - getEmployeeById
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 131
+      id: polish_employee_by_id_answer
+      position:
+        x: 3118
+        y: 83.93333333333334
+      positionAbsolute:
+        x: 3118
+        y: 83.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - polish_employee_by_id_answer
+          - text
+          value_type: string
+          variable: summary
+        selected: false
+        title: 同仁資料查詢結果 - getEmployeeById
+        type: end
+      height: 88
+      id: employee_by_id_end
+      position:
+        x: 3460
+        y: 83.93333333333334
+      positionAbsolute:
+        x: 3460
+        y: 83.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\n\ndef _text(value):\n    if value is None:\n       \
+          \ return '-'\n    text = str(value).strip()\n    return text if text else\
+          \ '-'\n\n\ndef _wanted_fields(requested_fields):\n    fields = [field.strip()\
+          \ for field in _text(requested_fields).split(',') if field.strip() and field.strip()\
+          \ != '-']\n    return set(fields)\n\n\ndef _employee_lines(employee, wanted):\n\
+          \    if not isinstance(employee, dict):\n        return []\n    field_map\
+          \ = [\n        ('姓名', 'name', 'name'),\n        ('員編', 'employeeId', 'employeeId'),\n\
+          \        ('帳號', 'employeeAccount', 'employeeAccount'),\n        ('Email',\
+          \ 'email', 'email'),\n        ('部門', 'department', 'department'),\n    ]\n\
+          \    show_all = not wanted or 'all' in wanted\n    lines = []\n    for label,\
+          \ key, token in field_map:\n        if show_all or token in wanted:\n  \
+          \          lines.append(f'- {label}：{_text(employee.get(key))}')\n    return\
+          \ lines\n\n\ndef main(status_code: int, body: str, requested_fields: str,\
+          \ query_direction: str, lookup_value: str) -> dict:\n    raw_json = body\
+          \ if isinstance(body, str) else json.dumps(body, ensure_ascii=False)\n \
+          \   try:\n        status = int(status_code)\n    except Exception:\n   \
+          \     status = 0\n\n    if status == 404:\n        return {\n          \
+          \  'summary': '查不到符合的同仁資料。',\n            'result_count': 0,\n         \
+          \   'raw_json': raw_json,\n        }\n    if status != 200:\n        return\
+          \ {\n            'summary': f'同仁資料 API 回應失敗（HTTP {status}）。',\n        \
+          \    'result_count': 0,\n            'raw_json': raw_json,\n        }\n\n\
+          \    try:\n        payload = json.loads(raw_json)\n    except Exception:\n\
+          \        return {\n            'summary': '同仁資料 API 回傳內容不是有效 JSON。',\n \
+          \           'result_count': 0,\n            'raw_json': raw_json,\n    \
+          \    }\n\n    wanted = _wanted_fields(requested_fields)\n    if isinstance(payload,\
+          \ dict) and isinstance(payload.get('employees'), list):\n        employees\
+          \ = [item for item in payload.get('employees') if isinstance(item, dict)]\n\
+          \        total_found = payload.get('total_found', len(employees))\n    elif\
+          \ isinstance(payload, dict):\n        employees = [payload]\n        total_found\
+          \ = 1\n    else:\n        employees = []\n        total_found = 0\n\n  \
+          \  if not employees:\n        return {\n            'summary': '查不到符合的同仁資料。',\n\
+          \            'result_count': 0,\n            'raw_json': raw_json,\n   \
+          \     }\n\n    lines = [\n        '## 同仁資料查詢結果',\n        f'- 查詢值：{_text(lookup_value)}',\n\
+          \        f'- 符合筆數：{total_found}',\n        '',\n    ]\n    for index, employee\
+          \ in enumerate(employees[:10], start=1):\n        lines.append(f'### 結果\
+          \ {index}')\n        lines.extend(_employee_lines(employee, wanted))\n \
+          \       lines.append('')\n\n    return {\n        'summary': '\\n'.join(lines).strip(),\n\
+          \        'result_count': len(employees),\n        'raw_json': raw_json,\n\
+          \    }\n"
+        code_language: python3
+        desc: 整理 searchEmployees 回傳的 EmployeeSearchResponse。
+        outputs:
+          raw_json:
+            children: null
+            type: string
+          result_count:
+            children: null
+            type: number
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 整理同仁資料結果 - searchEmployees
+        type: code
+        variables:
+        - value_selector:
+          - employee_directory_api_request
+          - status_code
+          value_type: number
+          variable: status_code
+        - value_selector:
+          - employee_directory_api_request
+          - body
+          value_type: string
+          variable: body
+        - value_selector:
+          - normalize_lookup
+          - requested_fields
+          value_type: string
+          variable: requested_fields
+        - value_selector:
+          - normalize_lookup
+          - query_direction
+          value_type: string
+          variable: query_direction
+        - value_selector:
+          - normalize_lookup
+          - lookup_value
+          value_type: string
+          variable: lookup_value
+      height: 95
+      id: format_employee_api_result
+      position:
+        x: 2092
+        y: 221.76666666666665
+      positionAbsolute:
+        x: 2092
+        y: 221.76666666666665
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 根據 searchEmployees 結果產生自然語言答案。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: polish-employee-system
+          role: system
+          text: '你是公司內部聯絡資訊查詢助手。請只根據 Employee Directory API 的整理結果回答，不要猜測或新增不存在的姓名、員編、帳號、Email、部門或分機。
+
+            回答規則：
+
+            - 若結果有明確資料，直接列出使用者要的欄位。
+
+            - 若有多筆候選，列出候選並請使用者補充姓名、員編或部門。
+
+            - 若查不到資料，直接說「查不到符合的同仁資料」。
+
+            - 不要聲稱 API 有提供分機；分機資料由通訊錄知識庫處理。
+
+            - 輸出繁體中文，語氣簡潔正式，不要輸出 JSON、XML、推理過程或原始 API 內容。'
+        - id: polish-employee-user
+          role: user
+          text: '使用者問題：{{#start.query#}}
+
+
+            查詢方向：{{#normalize_lookup.query_direction#}}
+
+            查詢值：{{#normalize_lookup.lookup_value#}}
+
+            使用者要求欄位：{{#normalize_lookup.requested_fields#}}
+
+
+            API 查詢結果：
+
+            {{#format_employee_api_result.summary#}}'
+        selected: false
+        title: 潤飾同仁資料回覆 - searchEmployees
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 131
+      id: polish_employee_answer
+      position:
+        x: 2434
+        y: 219.59999999999997
+      positionAbsolute:
+        x: 2434
+        y: 219.59999999999997
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - polish_employee_answer
+          - text
+          value_type: string
+          variable: summary
+        selected: false
+        title: 同仁資料查詢結果
+        type: end
+      height: 88
+      id: employee_api_end
+      position:
+        x: 2776
+        y: 262.93333333333334
+      positionAbsolute:
+        x: 2776
+        y: 262.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        dataset_ids:
+        - I7NbZZPEAYGvDEvFbMhL+Ek+KqytuwFUs+eZh2lHPuT5fqiY6r3Z36tyRUiNpjEA
+        desc: 使用原本同仁通訊錄知識庫檢索姓名與分機。
+        metadata_filtering_mode: disabled
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: reranking_model
+          reranking_model:
+            model: BAAI/bge-reranker-v2-m3
+            provider: langgenius/openai_api_compatible/openai_api_compatible
+          score_threshold: null
+          top_k: 4
+        query_attachment_selector: []
+        query_variable_selector:
+        - normalize_lookup
+        - retrieval_query
+        retrieval_mode: multiple
+        selected: false
+        single_retrieval_config: null
+        title: 檢索同仁通訊錄
+        type: knowledge-retrieval
+        vision:
+          enabled: false
+      height: 133
+      id: retrieve_colleague_directory
+      position:
+        x: 1750
+        y: 401.93333333333334
+      positionAbsolute:
+        x: 1750
+        y: 401.93333333333334
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - retrieve_colleague_directory
+          - result
+        desc: 根據檢索結果產生自然語言答案。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: polish-system
+          role: system
+          text: '你是公司內部通訊錄查詢助手。請只根據知識庫檢索內容回答，不要猜測或新增不存在的姓名、分機、部門或職稱。
+
+            回答規則：
+
+            - query_direction = name_to_extension 時，回答該同仁的分機。
+
+            - query_direction = extension_to_name 時，回答該分機對應的同仁姓名。
+
+            - 如果檢索內容有多筆可能符合，列出所有候選並請使用者補充條件。
+
+            - 如果檢索內容找不到明確符合資料，直接說「查不到符合的同仁通訊錄資料」。
+
+            - 輸出繁體中文，語氣簡潔正式，不要輸出 JSON、XML、推理過程或原始檢索片段。'
+        - id: polish-user
+          role: user
+          text: '使用者問題：{{#start.query#}}
+
+
+            查詢方向：{{#normalize_lookup.query_direction#}}
+
+            查詢值：{{#normalize_lookup.lookup_value#}}
+
+
+            知識庫檢索內容：
+
+            {{#context#}}'
+        selected: false
+        title: 潤飾回覆
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 115
+      id: polish_directory_answer
+      position:
+        x: 2092
+        y: 433.09999999999997
+      positionAbsolute:
+        x: 2092
+        y: 433.09999999999997
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - normalize_lookup
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 追問或不支援回覆
+        type: end
+      height: 88
+      id: missing_lookup_response
+      position:
+        x: 1388
+        y: 42.783333333333346
+      positionAbsolute:
+        x: 1388
+        y: 42.783333333333346
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - polish_directory_answer
+          - text
+          value_type: string
+          variable: summary
+        selected: false
+        title: End
+        type: end
+      height: 88
+      id: end
+      position:
+        x: 2434
+        y: 465.7666666666667
+      positionAbsolute:
+        x: 2434
+        y: 465.7666666666667
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -765.0000000000005
+      y: 54.00000000000006
+      zoom: 0.7
+  rag_pipeline_variables: []
