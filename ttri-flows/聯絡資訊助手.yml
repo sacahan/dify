@@ -24,7 +24,7 @@ workflow:
     selector:
     - env
     - EMPLOYEE_DIRECTORY_API_URL
-    value: http://127.0.0.1:8010
+    value: http://172.16.80.181:8010
     value_type: string
   - description: Employee Directory API Bearer token. 若 API 尚未啟用驗證，請留空；啟用後請在 Dify
       環境變數填入 token。
@@ -33,7 +33,7 @@ workflow:
     selector:
     - env
     - EMPLOYEE_DIRECTORY_API_TOKEN
-    value: ''
+    value: e6tMp_DfJNdEqLHa@JnnAVZ9
     value_type: secret
   features:
     file_upload:
@@ -415,10 +415,10 @@ workflow:
       id: extract_lookup_parameters
       position:
         x: 342
-        y: 59.16666666666666
+        y: 59.166666666666686
       positionAbsolute:
         x: 342
-        y: 59.16666666666666
+        y: 59.166666666666686
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -481,8 +481,8 @@ workflow:
           \ employee_id: str, email: str, department: str, requested_fields: str)\
           \ -> dict:\n    name = _clean_name(employee_name)\n    extension = _clean_extension(extension_number)\n\
           \    emp_id = _clean(employee_id) or _employee_id_from_query(query)\n  \
-          \  mail = _clean(email) or _email_from_query(query)\n    dept = _department_from_query(query)\
-          \ or _clean(department)\n    fields = _requested_fields(query,\
+          \  mail = _clean(email) or _email_from_query(query)\n    dept = _clean(department)\
+          \ or _department_from_query(query)\n    fields = _requested_fields(query,\
           \ requested_fields)\n\n    if not extension:\n        extension = _extension_from_query(query)\n\
           \    if not name and not dept:\n        name = _name_from_query(query)\n\
           \n    direction = _direction_from_query(query, query_direction, name, extension,\
@@ -508,9 +508,9 @@ workflow:
           \ name,\n        'extension_number': extension,\n        'employee_id':\
           \ emp_id,\n        'email': mail,\n        'department': dept,\n       \
           \ 'requested_fields': fields,\n        'lookup_value': lookup_value,\n \
-          \       'retrieval_query': retrieval_query,\n        'uses_employee_api': uses_employee_api,\n\
-          \        'needs_clarification': needs_clarification,\n        'summary':\
-          \ summary,\n    }\n"
+          \       'retrieval_query': retrieval_query,\n        'uses_employee_api':\
+          \ uses_employee_api,\n        'needs_clarification': needs_clarification,\n\
+          \        'summary': summary,\n    }\n"
         code_language: python3
         desc: 正規化抽取結果，補強分機/API 條件，並決定查詢資料來源。
         outputs:
@@ -598,10 +598,10 @@ workflow:
       id: normalize_lookup
       position:
         x: 684
-        y: 99.00000000000001
+        y: 99
       positionAbsolute:
         x: 684
-        y: 99.00000000000001
+        y: 99
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -668,39 +668,18 @@ workflow:
       type: custom
       width: 242
     - data:
-        code: |
-          from urllib.parse import quote
-
-
-          def _clean(value):
-              if value is None:
-                  return ''
-              return str(value).strip()
-
-
-          def main(employee_id: str, employee_name: str, email: str, department: str) -> dict:
-              emp_id = _clean(employee_id)
-              name = _clean(employee_name)
-              mail = _clean(email)
-              dept = _clean(department)
-              uses_employee_id_endpoint = bool(emp_id and not name and not mail and not dept)
-
-              params = []
-              if emp_id and not uses_employee_id_endpoint:
-                  params.append(f'employeeId={quote(emp_id)}')
-              if name:
-                  params.append(f'name={quote(name)}')
-              if mail:
-                  params.append(f'email={quote(mail)}')
-              if dept:
-                  params.append(f'department={quote(dept)}')
-              params.append('limit=10')
-
-              return {
-                  'uses_employee_id_endpoint': uses_employee_id_endpoint,
-                  'employee_id_path': quote(emp_id),
-                  'employee_search_query': '&'.join(params),
-              }
+        code: "from urllib.parse import quote\n\n\ndef _clean(value):\n    if value\
+          \ is None:\n        return ''\n    return str(value).strip()\n\n\ndef main(employee_id:\
+          \ str, employee_name: str, email: str, department: str) -> dict:\n    emp_id\
+          \ = _clean(employee_id)\n    name = _clean(employee_name)\n    mail = _clean(email)\n\
+          \    dept = _clean(department)\n    uses_employee_id_endpoint = bool(emp_id\
+          \ and not name and not mail and not dept)\n\n    params = []\n    if emp_id\
+          \ and not uses_employee_id_endpoint:\n        params.append(f'employeeId={quote(emp_id)}')\n\
+          \    if name:\n        params.append(f'name={quote(name)}')\n    if mail:\n\
+          \        params.append(f'email={quote(mail)}')\n    if dept:\n        params.append(f'department={quote(dept)}')\n\
+          \    params.append('limit=10')\n\n    return {\n        'uses_employee_id_endpoint':\
+          \ uses_employee_id_endpoint,\n        'employee_id_path': quote(emp_id),\n\
+          \        'employee_search_query': '&'.join(params),\n    }\n"
         code_language: python3
         desc: 依 OpenAPI contract 明確選擇 getEmployeeById 或 searchEmployees endpoint。
         outputs:
@@ -737,14 +716,14 @@ workflow:
           - department
           value_type: string
           variable: department
-      height: 95
+      height: 111
       id: prepare_employee_api_request
       position:
         x: 1750
-        y: 123.93333333333334
+        y: 159.88333333333333
       positionAbsolute:
         x: 1750
-        y: 123.93333333333334
+        y: 159.88333333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -767,14 +746,14 @@ workflow:
         selected: false
         title: 選擇 Employee API endpoint
         type: if-else
-      height: 191
+      height: 207
       id: route_employee_api_endpoint
       position:
         x: 2092
-        y: 123.93333333333334
+        y: 130.38333333333333
       positionAbsolute:
         x: 2092
-        y: 123.93333333333334
+        y: 130.38333333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -809,14 +788,14 @@ workflow:
         title: 查詢同仁資料 API - getEmployeeById
         type: http-request
         url: '{{#env.EMPLOYEE_DIRECTORY_API_URL#}}/v1/employees/{{#prepare_employee_api_request.employee_id_path#}}'
-      height: 158
+      height: 190
       id: employee_directory_get_by_id_request
       position:
-        x: 2434
-        y: 83.93333333333334
+        x: 2454
+        y: 37.28333333333333
       positionAbsolute:
-        x: 2434
-        y: 83.93333333333334
+        x: 2454
+        y: 37.28333333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -830,7 +809,8 @@ workflow:
           - type: text
             value: ''
           type: none
-        desc: 'OpenAPI operationId: searchEmployees；GET /v1/employees/search，query 支援 employeeId、name、email、department、limit。'
+        desc: 'OpenAPI operationId: searchEmployees；GET /v1/employees/search，query
+          支援 employeeId、name、email、department、limit。'
         headers: 'Authorization: Bearer {{#env.EMPLOYEE_DIRECTORY_API_TOKEN#}}'
         method: GET
         params: ''
@@ -842,7 +822,7 @@ workflow:
             multiplier: 2
           max_retries: 1
           retry_interval: 1000
-        selected: true
+        selected: false
         ssl_verify: true
         timeout:
           connect: 10
@@ -851,84 +831,49 @@ workflow:
         title: 查詢同仁資料 API - searchEmployees
         type: http-request
         url: '{{#env.EMPLOYEE_DIRECTORY_API_URL#}}/v1/employees/search?{{#prepare_employee_api_request.employee_search_query#}}'
-      height: 158
+      height: 222
       id: employee_directory_api_request
       position:
-        x: 1750
-        y: 163.93333333333334
+        x: 2454
+        y: 307.2833333333333
       positionAbsolute:
-        x: 1750
-        y: 163.93333333333334
-      selected: true
+        x: 2454
+        y: 307.2833333333333
+      selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
       width: 242
     - data:
-        code: |
-          import json
-
-
-          def _text(value):
-              if value is None:
-                  return '-'
-              text = str(value).strip()
-              return text if text else '-'
-
-
-          def _wanted_fields(requested_fields):
-              fields = [field.strip() for field in _text(requested_fields).split(',') if field.strip() and field.strip() != '-']
-              return set(fields)
-
-
-          def _employee_lines(employee, wanted):
-              field_map = [
-                  ('姓名', 'name', 'name'),
-                  ('員編', 'employeeId', 'employeeId'),
-                  ('帳號', 'employeeAccount', 'employeeAccount'),
-                  ('Email', 'email', 'email'),
-                  ('部門', 'department', 'department'),
-              ]
-              show_all = not wanted or 'all' in wanted
-              lines = []
-              for label, key, token in field_map:
-                  if show_all or token in wanted:
-                      lines.append(f'- {label}：{_text(employee.get(key))}')
-              return lines
-
-
-          def main(status_code: int, body: str, requested_fields: str, lookup_value: str) -> dict:
-              raw_json = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)
-              try:
-                  status = int(status_code)
-              except Exception:
-                  status = 0
-
-              if status == 404:
-                  return {'summary': '查不到符合的同仁資料。', 'result_count': 0, 'raw_json': raw_json}
-              if status == 401:
-                  return {'summary': '同仁資料 API 驗證失敗，請確認 Bearer token。', 'result_count': 0, 'raw_json': raw_json}
-              if status != 200:
-                  return {'summary': f'同仁資料 API 回應失敗（HTTP {status}）。', 'result_count': 0, 'raw_json': raw_json}
-
-              try:
-                  payload = json.loads(raw_json)
-              except Exception:
-                  return {'summary': '同仁資料 API 回傳內容不是有效 JSON。', 'result_count': 0, 'raw_json': raw_json}
-
-              if not isinstance(payload, dict):
-                  return {'summary': '同仁資料 API 回傳內容不是同仁物件。', 'result_count': 0, 'raw_json': raw_json}
-
-              wanted = _wanted_fields(requested_fields)
-              lines = [
-                  '## 同仁資料查詢結果',
-                  f'- API：GET /v1/employees/{{employee_id}}',
-                  f'- 查詢值：{_text(lookup_value)}',
-                  '- 符合筆數：1',
-                  '',
-              ]
-              lines.extend(_employee_lines(payload, wanted))
-              return {'summary': '\n'.join(lines).strip(), 'result_count': 1, 'raw_json': raw_json}
+        code: "import json\n\n\ndef _text(value):\n    if value is None:\n       \
+          \ return '-'\n    text = str(value).strip()\n    return text if text else\
+          \ '-'\n\n\ndef _wanted_fields(requested_fields):\n    fields = [field.strip()\
+          \ for field in _text(requested_fields).split(',') if field.strip() and field.strip()\
+          \ != '-']\n    return set(fields)\n\n\ndef _employee_lines(employee, wanted):\n\
+          \    field_map = [\n        ('姓名', 'name', 'name'),\n        ('員編', 'employeeId',\
+          \ 'employeeId'),\n        ('帳號', 'employeeAccount', 'employeeAccount'),\n\
+          \        ('Email', 'email', 'email'),\n        ('部門', 'department', 'department'),\n\
+          \    ]\n    show_all = not wanted or 'all' in wanted\n    lines = []\n \
+          \   for label, key, token in field_map:\n        if show_all or token in\
+          \ wanted:\n            lines.append(f'- {label}：{_text(employee.get(key))}')\n\
+          \    return lines\n\n\ndef main(status_code: int, body: str, requested_fields:\
+          \ str, lookup_value: str) -> dict:\n    raw_json = body if isinstance(body,\
+          \ str) else json.dumps(body, ensure_ascii=False)\n    try:\n        status\
+          \ = int(status_code)\n    except Exception:\n        status = 0\n\n    if\
+          \ status == 404:\n        return {'summary': '查不到符合的同仁資料。', 'result_count':\
+          \ 0, 'raw_json': raw_json}\n    if status == 401:\n        return {'summary':\
+          \ '同仁資料 API 驗證失敗，請確認 Bearer token。', 'result_count': 0, 'raw_json': raw_json}\n\
+          \    if status != 200:\n        return {'summary': f'同仁資料 API 回應失敗（HTTP\
+          \ {status}）。', 'result_count': 0, 'raw_json': raw_json}\n\n    try:\n  \
+          \      payload = json.loads(raw_json)\n    except Exception:\n        return\
+          \ {'summary': '同仁資料 API 回傳內容不是有效 JSON。', 'result_count': 0, 'raw_json':\
+          \ raw_json}\n\n    if not isinstance(payload, dict):\n        return {'summary':\
+          \ '同仁資料 API 回傳內容不是同仁物件。', 'result_count': 0, 'raw_json': raw_json}\n\n \
+          \   wanted = _wanted_fields(requested_fields)\n    lines = [\n        '##\
+          \ 同仁資料查詢結果',\n        f'- API：GET /v1/employees/{{employee_id}}',\n    \
+          \    f'- 查詢值：{_text(lookup_value)}',\n        '- 符合筆數：1',\n        '',\n\
+          \    ]\n    lines.extend(_employee_lines(payload, wanted))\n    return {'summary':\
+          \ '\\n'.join(lines).strip(), 'result_count': 1, 'raw_json': raw_json}\n"
         code_language: python3
         desc: 整理 getEmployeeById 回傳的 EmployeeRecord。
         outputs:
@@ -968,11 +913,11 @@ workflow:
       height: 95
       id: format_employee_by_id_result
       position:
-        x: 2776
-        y: 83.93333333333334
+        x: 2796
+        y: 116.45000000000002
       positionAbsolute:
-        x: 2776
-        y: 83.93333333333334
+        x: 2796
+        y: 116.45000000000002
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -992,7 +937,7 @@ workflow:
         prompt_template:
         - id: polish-employee-by-id-system
           role: system
-          text: '你是公司內部聯絡資訊查詢助手。請只根據 Employee Directory API 的整理結果回答，不要猜測或新增不存在的姓名、員編、帳號、Email、部門或分機。輸出繁體中文，語氣簡潔正式。'
+          text: 你是公司內部聯絡資訊查詢助手。請只根據 Employee Directory API 的整理結果回答，不要猜測或新增不存在的姓名、員編、帳號、Email、部門或分機。輸出繁體中文，語氣簡潔正式。
         - id: polish-employee-by-id-user
           role: user
           text: '使用者問題：{{#start.query#}}
@@ -1010,11 +955,11 @@ workflow:
       height: 131
       id: polish_employee_by_id_answer
       position:
-        x: 3118
-        y: 83.93333333333334
+        x: 3138
+        y: 114.28333333333333
       positionAbsolute:
-        x: 3118
-        y: 83.93333333333334
+        x: 3138
+        y: 114.28333333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1034,11 +979,11 @@ workflow:
       height: 88
       id: employee_by_id_end
       position:
-        x: 3460
-        y: 83.93333333333334
+        x: 3480
+        y: 157.61666666666667
       positionAbsolute:
-        x: 3460
-        y: 83.93333333333334
+        x: 3480
+        y: 157.61666666666667
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1128,11 +1073,11 @@ workflow:
       height: 95
       id: format_employee_api_result
       position:
-        x: 2092
-        y: 221.76666666666665
+        x: 2796
+        y: 407.7833333333333
       positionAbsolute:
-        x: 2092
-        y: 221.76666666666665
+        x: 2796
+        y: 407.7833333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1189,12 +1134,12 @@ workflow:
       height: 131
       id: polish_employee_answer
       position:
-        x: 2434
-        y: 219.59999999999997
+        x: 3138
+        y: 402.75952380952384
       positionAbsolute:
-        x: 2434
-        y: 219.59999999999997
-      selected: false
+        x: 3138
+        y: 402.75952380952384
+      selected: true
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -1213,11 +1158,11 @@ workflow:
       height: 88
       id: employee_api_end
       position:
-        x: 2776
-        y: 262.93333333333334
+        x: 3480
+        y: 448.95000000000005
       positionAbsolute:
-        x: 2776
-        y: 262.93333333333334
+        x: 3480
+        y: 448.95000000000005
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1247,14 +1192,14 @@ workflow:
         type: knowledge-retrieval
         vision:
           enabled: false
-      height: 133
+      height: 95
       id: retrieve_colleague_directory
       position:
         x: 1750
-        y: 401.93333333333334
+        y: 570.7833333333333
       positionAbsolute:
         x: 1750
-        y: 401.93333333333334
+        y: 570.7833333333333
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1312,10 +1257,10 @@ workflow:
       id: polish_directory_answer
       position:
         x: 2092
-        y: 433.09999999999997
+        y: 576.6166666666667
       positionAbsolute:
         x: 2092
-        y: 433.09999999999997
+        y: 576.6166666666667
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -1360,17 +1305,17 @@ workflow:
       id: end
       position:
         x: 2434
-        y: 465.7666666666667
+        y: 609.2833333333333
       positionAbsolute:
         x: 2434
-        y: 465.7666666666667
+        y: 609.2833333333333
       selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
       width: 242
     viewport:
-      x: -765.0000000000005
-      y: 54.00000000000006
-      zoom: 0.7
+      x: 140.50000000000063
+      y: 273.70166666666694
+      zoom: 0.6999999999999997
   rag_pipeline_variables: []

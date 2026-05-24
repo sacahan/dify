@@ -1,0 +1,912 @@
+app:
+  description: 連接 GraphRAG Query API，回答政府專案技術報告相關技術問題
+  icon: books
+  icon_background: '#E0F2FE'
+  icon_type: emoji
+  mode: workflow
+  name: 知識庫問答助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.50@bcca1b734d9ae24ce8ddb9652bd872d69b91a3ffdb2ff8f8885c6f651da33cb0
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: GraphRAG Query API base URL. 若 Dify 在 Docker 內執行，請設定為容器可連線的 host，不要使用只能指向容器自己的
+      127.0.0.1。
+    id: graphrag-answer-api-url
+    name: GRAPHRAG_ANSWER_API_URL
+    selector:
+    - env
+    - GRAPHRAG_ANSWER_API_URL
+    value: http://127.0.0.1:8000
+    value_type: string
+  - description: GraphRAG Query API Bearer token. 請填入與服務端 GRAPHRAG_SERVICE_TOKEN 相同的值。
+    id: graphrag-query-api-token
+    name: GRAPHRAG_QUERY_API_TOKEN
+    selector:
+    - env
+    - GRAPHRAG_QUERY_API_TOKEN
+    value: d3pCyAsD.@7AVKuEd*4!gp6.
+    value_type: secret
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: 請詢問政府專案技術報告相關問題，例如系統架構、技術規格、資料流程、API、部署、測試、限制、風險、改善建議或專案技術差異比較。
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+    - 某政府專案技術報告的系統架構如何設計？
+    - 報告中 API 與資料流程有哪些重點？
+    - 這個專案的部署限制與風險是什麼？
+    - 兩個政府專案的技術方案差異在哪裡？
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: question-classifier
+      id: start-source-classify_question_scope-target
+      source: start
+      sourceHandle: source
+      target: classify_question_scope
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: code
+      id: classify_question_scope-technical_report_qa-prepare_answer_request-target
+      source: classify_question_scope
+      sourceHandle: technical_report_qa
+      target: prepare_answer_request
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: code
+      id: classify_question_scope-clarification-clarify_supported_questions-target
+      source: classify_question_scope
+      sourceHandle: clarification
+      target: clarify_supported_questions
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: code
+      id: classify_question_scope-unsupported-unsupported_question_response-target
+      source: classify_question_scope
+      sourceHandle: unsupported
+      target: unsupported_question_response
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: http-request
+      id: prepare_answer_request-source-call_graphrag_answer_api-target
+      source: prepare_answer_request
+      sourceHandle: source
+      target: call_graphrag_answer_api
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: call_graphrag_answer_api-source-format_answer_api_result-target
+      source: call_graphrag_answer_api
+      sourceHandle: source
+      target: format_answer_api_result
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: format_answer_api_result-source-build_quality_review_input-target
+      source: format_answer_api_result
+      sourceHandle: source
+      target: build_quality_review_input
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: parameter-extractor
+      id: build_quality_review_input-source-evaluate_answer_quality-target
+      source: build_quality_review_input
+      sourceHandle: source
+      target: evaluate_answer_quality
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: parameter-extractor
+        targetType: llm
+      id: evaluate_answer_quality-source-compose_final_answer-target
+      source: evaluate_answer_quality
+      sourceHandle: source
+      target: compose_final_answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: compose_final_answer-source-end-target
+      source: compose_final_answer
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: clarify_supported_questions-source-clarification_end-target
+      source: clarify_supported_questions
+      sourceHandle: source
+      target: clarification_end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: unsupported_question_response-source-unsupported_end-target
+      source: unsupported_question_response
+      sourceHandle: source
+      target: unsupported_end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: 請輸入政府專案技術報告相關技術問題。
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - default: ''
+          hint: 可詢問政府專案技術報告中的系統架構、技術規格、資料流程、API、部署、測試、限制、風險或改善建議。
+          label: 技術問題
+          max_length: 1000
+          options: []
+          placeholder: 這個政府專案技術報告的系統架構如何設計？
+          required: true
+          type: paragraph
+          variable: query
+      height: 156
+      id: start
+      position:
+        x: 0
+        y: 137.09523809523807
+      positionAbsolute:
+        x: 0
+        y: 137.09523809523807
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        classes:
+        - id: technical_report_qa
+          name: technical_report_qa
+        - id: clarification
+          name: clarification
+        - id: unsupported
+          name: unsupported
+        desc: 呼叫 API 前先審核問題是否屬於政府專案技術報告知識庫範圍。
+        instruction: '請只輸出最適合的分類：
+
+          - technical_report_qa：使用者詢問政府專案技術報告中的系統架構、技術規格、資料流程、API、部署、測試、限制、風險、改善建議、專案技術差異比較，或明確要求從政府專案技術報告找答案。
+
+          - clarification：使用者在問這個助手可以問什麼、怎麼問、知識庫範圍是什麼。
+
+          - unsupported：不是政府專案技術報告相關技術問題，例如天氣、閒聊、一般百科、公司人事、請假、個人資訊、政治評論、法律意見、醫療建議、投資建議，或沒有足夠線索連到政府專案技術報告。
+
+          若問題只問一般技術概念，沒有指向政府專案、技術報告、報告內容或專案文件，請分類為 unsupported。'
+        model:
+          completion_params:
+            temperature: 0
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        query_variable_selector:
+        - start
+        - query
+        selected: false
+        title: 審核問題範圍
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 264
+      id: classify_question_scope
+      position:
+        x: 342
+        y: 109.09523809523807
+      positionAbsolute:
+        x: 342
+        y: 109.09523809523807
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\n\ndef main(query: str) -> dict:\n    request = {\n \
+          \       \"query\": str(query or \"\").strip(),\n        \"top_k\": 5,\n\
+          \        \"return_context\": True,\n        \"use_reranker\": False,\n \
+          \   }\n    return {\n        \"request_body\": json.dumps(request, ensure_ascii=False),\n\
+          \        \"query\": request[\"query\"],\n    }\n"
+        code_language: python3
+        desc: 建立 /answer request body；不得加入 /answer 禁止的 reranker internal fields。
+        outputs:
+          query:
+            children: null
+            type: string
+          request_body:
+            children: null
+            type: string
+        selected: false
+        title: 建立 Answer API 請求
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+      height: 112
+      id: prepare_answer_request
+      position:
+        x: 704
+        y: 18.833333333333357
+      positionAbsolute:
+        x: 704
+        y: 18.833333333333357
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          type: no-auth
+        body:
+          data:
+          - key: ''
+            type: text
+            value: '{{#prepare_answer_request.request_body#}}'
+          type: json
+        desc: 'OpenAPI operationId: answer；POST /answer，request 只使用 query、top_k、return_context、use_reranker。'
+        headers: 'Authorization: Bearer {{#env.GRAPHRAG_QUERY_API_TOKEN#}}'
+        method: POST
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 60
+          write: 30
+        title: 呼叫 GraphRAG Answer API
+        type: http-request
+        url: '{{#env.GRAPHRAG_ANSWER_API_URL#}}/answer'
+      height: 187
+      id: call_graphrag_answer_api
+      position:
+        x: 1046
+        y: 0
+      positionAbsolute:
+        x: 1046
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\n\ndef _text(value):\n    if value is None:\n       \
+          \ return \"\"\n    return str(value).strip()\n\n\ndef _loads(raw):\n   \
+          \ if isinstance(raw, dict):\n        return raw\n    if raw is None:\n \
+          \       return {}\n    try:\n        return json.loads(str(raw))\n    except\
+          \ Exception:\n        return {}\n\n\ndef _citation_label(item, index):\n\
+          \    if not isinstance(item, dict):\n        return f\"{index}. 無法解析的引用\"\
+          \n    refs = item.get(\"source_refs\") or []\n    ref_text = \"\"\n    if\
+          \ refs and isinstance(refs[0], dict):\n        source_id = refs[0].get(\"\
+          source_id\") or refs[0].get(\"id\") or refs[0].get(\"title\") or \"\"\n\
+          \        source_type = refs[0].get(\"source_type\") or refs[0].get(\"type\"\
+          ) or \"\"\n        ref_text = f\"，source_refs={source_type}:{source_id}\"\
+          .strip(\"，\")\n    return (\n        f\"{index}. documentKey={_text(item.get('documentKey'))\
+          \ or '-'}，\"\n        f\"chunkKey={_text(item.get('chunkKey')) or '-'}，\"\
+          \n        f\"method={_text(item.get('retrievalMethod')) or '-'}，\"\n   \
+          \     f\"score={item.get('score', '-')}{('，' + ref_text) if ref_text else\
+          \ ''}\"\n    )\n\n\ndef main(status_code: int, body: str) -> dict:\n   \
+          \ raw_json = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)\n\
+          \    try:\n        status = int(status_code)\n    except Exception:\n  \
+          \      status = 0\n\n    if status == 401:\n        return {\n         \
+          \   \"api_ok\": False,\n            \"answer\": \"\",\n            \"citations_summary\"\
+          : \"\",\n            \"used_evidence_summary\": \"\",\n            \"limitations_summary\"\
+          : \"GraphRAG Query API 驗證失敗，請確認 Bearer token。\",\n            \"confidence_text\"\
+          : \"\",\n            \"context\": \"\",\n            \"retrieval_mode\"\
+          : \"\",\n            \"raw_json\": raw_json,\n            \"summary\": \"\
+          GraphRAG Query API 驗證失敗，請確認 GRAPHRAG_QUERY_API_TOKEN。\",\n        }\n  \
+          \  if status == 403:\n        return {\n            \"api_ok\": False,\n\
+          \            \"answer\": \"\",\n            \"citations_summary\": \"\"\
+          ,\n            \"used_evidence_summary\": \"\",\n            \"limitations_summary\"\
+          : \"GraphRAG Query API 拒絕存取，請確認使用者上下文或服務授權設定。\",\n            \"confidence_text\"\
+          : \"\",\n            \"context\": \"\",\n            \"retrieval_mode\"\
+          : \"\",\n            \"raw_json\": raw_json,\n            \"summary\": \"\
+          GraphRAG Query API 拒絕存取，請確認服務授權設定。\",\n        }\n    if status == 422:\n\
+          \        return {\n            \"api_ok\": False,\n            \"answer\"\
+          : \"\",\n            \"citations_summary\": \"\",\n            \"used_evidence_summary\"\
+          : \"\",\n            \"limitations_summary\": \"GraphRAG Query API 參數驗證失敗。\"\
+          ,\n            \"confidence_text\": \"\",\n            \"context\": \"\"\
+          ,\n            \"retrieval_mode\": \"\",\n            \"raw_json\": raw_json,\n\
+          \            \"summary\": \"GraphRAG Query API 參數驗證失敗，請確認 /answer request\
+          \ contract。\",\n        }\n    if status != 200:\n        return {\n   \
+          \         \"api_ok\": False,\n            \"answer\": \"\",\n          \
+          \  \"citations_summary\": \"\",\n            \"used_evidence_summary\":\
+          \ \"\",\n            \"limitations_summary\": f\"GraphRAG Query API 回應失敗（HTTP\
+          \ {status}）。\",\n            \"confidence_text\": \"\",\n            \"\
+          context\": \"\",\n            \"retrieval_mode\": \"\",\n            \"\
+          raw_json\": raw_json,\n            \"summary\": f\"GraphRAG Query API 回應失敗（HTTP\
+          \ {status}）。\",\n        }\n\n    payload = _loads(raw_json)\n    if not\
+          \ payload:\n        return {\n            \"api_ok\": False,\n         \
+          \   \"answer\": \"\",\n            \"citations_summary\": \"\",\n      \
+          \      \"used_evidence_summary\": \"\",\n            \"limitations_summary\"\
+          : \"GraphRAG Query API 回傳內容不是有效 JSON。\",\n            \"confidence_text\"\
+          : \"\",\n            \"context\": \"\",\n            \"retrieval_mode\"\
+          : \"\",\n            \"raw_json\": raw_json,\n            \"summary\": \"\
+          GraphRAG Query API 回傳內容不是有效 JSON。\",\n        }\n\n    citations = payload.get(\"\
+          citations\") or []\n    used_evidence = payload.get(\"usedEvidence\") or\
+          \ []\n    limitations = payload.get(\"limitations\") or []\n    answer =\
+          \ _text(payload.get(\"answer\"))\n    confidence = payload.get(\"confidence\"\
+          )\n    context = _text(payload.get(\"context\"))\n    retrieval_mode = _text(payload.get(\"\
+          retrievalMode\"))\n\n    citations_summary = \"\\n\".join(\n        _citation_label(item,\
+          \ index) for index, item in enumerate(citations[:8], start=1)\n    )\n \
+          \   used_evidence_summary = \"\\n\".join(\n        _citation_label(item,\
+          \ index) for index, item in enumerate(used_evidence[:8], start=1)\n    )\n\
+          \    limitations_summary = \"\\n\".join(f\"- {_text(item)}\" for item in\
+          \ limitations if _text(item))\n    confidence_text = \"\" if confidence\
+          \ is None else str(confidence)\n\n    if not answer:\n        summary =\
+          \ \"GraphRAG Query API 未產生答案。\"\n    elif not citations and not used_evidence:\n\
+          \        summary = \"GraphRAG Query API 已回覆，但沒有可用引用或證據。\"\n    else:\n \
+          \       summary = \"GraphRAG Query API 已回覆並提供證據。\"\n\n    return {\n   \
+          \     \"api_ok\": True,\n        \"answer\": answer,\n        \"citations_summary\"\
+          : citations_summary,\n        \"used_evidence_summary\": used_evidence_summary,\n\
+          \        \"limitations_summary\": limitations_summary,\n        \"confidence_text\"\
+          : confidence_text,\n        \"context\": context[:6000],\n        \"retrieval_mode\"\
+          : retrieval_mode,\n        \"raw_json\": raw_json,\n        \"summary\"\
+          : summary,\n    }\n"
+        code_language: python3
+        desc: 解析 AnswerResponse 並整理答案、引用、證據、限制與錯誤狀態。
+        outputs:
+          answer:
+            children: null
+            type: string
+          api_ok:
+            children: null
+            type: boolean
+          citations_summary:
+            children: null
+            type: string
+          confidence_text:
+            children: null
+            type: string
+          context:
+            children: null
+            type: string
+          limitations_summary:
+            children: null
+            type: string
+          raw_json:
+            children: null
+            type: string
+          retrieval_mode:
+            children: null
+            type: string
+          summary:
+            children: null
+            type: string
+          used_evidence_summary:
+            children: null
+            type: string
+        selected: false
+        title: 整理 Answer API 回覆
+        type: code
+        variables:
+        - value_selector:
+          - call_graphrag_answer_api
+          - status_code
+          value_type: number
+          variable: status_code
+        - value_selector:
+          - call_graphrag_answer_api
+          - body
+          value_type: string
+          variable: body
+      height: 96
+      id: format_answer_api_result
+      position:
+        x: 1388
+        y: 76.66666666666669
+      positionAbsolute:
+        x: 1388
+        y: 76.66666666666669
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def _section(title, content):\n    text = str(content or \"\").strip()\n\
+          \    return f\"## {title}\\n{text if text else '-'}\"\n\n\ndef main(\n \
+          \   query: str,\n    api_ok: bool,\n    answer: str,\n    citations_summary:\
+          \ str,\n    used_evidence_summary: str,\n    limitations_summary: str,\n\
+          \    confidence_text: str,\n    retrieval_mode: str,\n    context: str,\n\
+          \    api_summary: str,\n) -> dict:\n    parts = [\n        _section(\"使用者問題\"\
+          , query),\n        _section(\"API 狀態\", f\"api_ok={api_ok}\\n{api_summary}\"\
+          ),\n        _section(\"API 答案\", answer),\n        _section(\"引用\", citations_summary),\n\
+          \        _section(\"使用證據\", used_evidence_summary),\n        _section(\"\
+          限制\", limitations_summary),\n        _section(\"信心與檢索模式\", f\"confidence={confidence_text\
+          \ or '-'}\\nretrievalMode={retrieval_mode or '-'}\"),\n        _section(\"\
+          Context\", context),\n    ]\n    return {\"review_input\": \"\\n\\n\".join(parts)}\n"
+        code_language: python3
+        desc: 組合品質審核需要的問題、答案、引用、限制與 context。
+        outputs:
+          review_input:
+            children: null
+            type: string
+        selected: false
+        title: 組合品質審核內容
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+        - value_selector:
+          - format_answer_api_result
+          - api_ok
+          value_type: boolean
+          variable: api_ok
+        - value_selector:
+          - format_answer_api_result
+          - answer
+          value_type: string
+          variable: answer
+        - value_selector:
+          - format_answer_api_result
+          - citations_summary
+          value_type: string
+          variable: citations_summary
+        - value_selector:
+          - format_answer_api_result
+          - used_evidence_summary
+          value_type: string
+          variable: used_evidence_summary
+        - value_selector:
+          - format_answer_api_result
+          - limitations_summary
+          value_type: string
+          variable: limitations_summary
+        - value_selector:
+          - format_answer_api_result
+          - confidence_text
+          value_type: string
+          variable: confidence_text
+        - value_selector:
+          - format_answer_api_result
+          - retrieval_mode
+          value_type: string
+          variable: retrieval_mode
+        - value_selector:
+          - format_answer_api_result
+          - context
+          value_type: string
+          variable: context
+        - value_selector:
+          - format_answer_api_result
+          - summary
+          value_type: string
+          variable: api_summary
+      height: 96
+      id: build_quality_review_input
+      position:
+        x: 1730
+        y: 92.66666666666669
+      positionAbsolute:
+        x: 1730
+        y: 92.66666666666669
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 由 LLM 判斷 API 答案是否符合題意，並產生補救方案。
+        instruction: '請根據輸入內容評估 API 答案品質，只回傳參數，不要直接回答使用者。
+
+          評估規則：
+
+          - quality_grade 只能是 good、partial、poor。
+
+          - good：答案直接回應使用者題意，且有引用或使用證據支撐，沒有重大限制。
+
+          - partial：答案部分回應題意，但缺少專案名稱、章節、證據不足、限制明顯，或只回答到相鄰問題。
+
+          - poor：API 失敗、沒有答案、沒有證據、答非所問，或無法判斷是否來自政府專案技術報告。
+
+          - matches_intent 只能是 true 或 false。若答案沒有回答使用者真正問的技術點，填 false。
+
+          - issue_summary 用一句話說明主要品質問題；good 時填「答案符合題意」。
+
+          - remediation 給具體補救方案；good 時可填「不需要補救」。
+
+          - suggested_questions 提供 2 到 4 個更適合知識庫的改問範例，以分號分隔。'
+        memory: null
+        model:
+          completion_params:
+            temperature: 0
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        parameters:
+        - description: 只能是 good、partial、poor。
+          name: quality_grade
+          required: true
+          type: string
+        - description: 答案是否符合使用者題意，只能是 true 或 false。
+          name: matches_intent
+          required: true
+          type: string
+        - description: 一句話說明答案品質問題；若品質良好，填「答案符合題意」。
+          name: issue_summary
+          required: false
+          type: string
+        - description: 具體補救方案；若品質良好，填「不需要補救」。
+          name: remediation
+          required: false
+          type: string
+        - description: 2 到 4 個更適合知識庫的改問範例，以分號分隔。
+          name: suggested_questions
+          required: false
+          type: string
+        query:
+        - build_quality_review_input
+        - review_input
+        reasoning_mode: function_call
+        selected: false
+        title: 評估答案品質
+        type: parameter-extractor
+        vision:
+          enabled: false
+      height: 132
+      id: evaluate_answer_quality
+      position:
+        x: 2072
+        y: 90.66666666666669
+      positionAbsolute:
+        x: 2072
+        y: 90.66666666666669
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 根據 API 答案與品質審核結果，產生最終回覆。
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: google/gemma-4-E4B-it
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+        prompt_template:
+        - id: compose-final-system
+          role: system
+          text: '你是政府專案技術報告知識庫問答助手。請只根據 GraphRAG Answer API 的答案、引用、證據、限制與品質審核結果回覆，不要補充外部知識，不要猜測。
+
+            回覆規則：
+
+            - 若 API 失敗或品質為 poor，先明確說明目前無法提供可靠答案，再列出補救方案與建議改問範例。
+
+            - 若品質為 partial，先回答可被證據支撐的部分，再說明不足之處與補救建議。
+
+            - 若品質為 good 且 matches_intent=true，直接回答使用者問題，並在最後用「參考依據」簡列引用或使用證據。
+
+            - 不要輸出 JSON、XML、原始 API body、推理過程或內部節點名稱。
+
+            - 全程使用繁體中文，語氣直接、具體、正式。'
+        - id: compose-final-user
+          role: user
+          text: '使用者問題：
+
+            {{#start.query#}}
+
+
+            API 狀態摘要：
+
+            {{#format_answer_api_result.summary#}}
+
+
+            API 答案：
+
+            {{#format_answer_api_result.answer#}}
+
+
+            引用：
+
+            {{#format_answer_api_result.citations_summary#}}
+
+
+            使用證據：
+
+            {{#format_answer_api_result.used_evidence_summary#}}
+
+
+            限制：
+
+            {{#format_answer_api_result.limitations_summary#}}
+
+
+            品質評估：
+
+            - quality_grade: {{#evaluate_answer_quality.quality_grade#}}
+
+            - matches_intent: {{#evaluate_answer_quality.matches_intent#}}
+
+            - issue_summary: {{#evaluate_answer_quality.issue_summary#}}
+
+            - remediation: {{#evaluate_answer_quality.remediation#}}
+
+            - suggested_questions: {{#evaluate_answer_quality.suggested_questions#}}'
+        selected: false
+        title: 產生最終回覆
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 132
+      id: compose_final_answer
+      position:
+        x: 2414
+        y: 112.66666666666669
+      positionAbsolute:
+        x: 2414
+        y: 112.66666666666669
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(query: str) -> dict:\n    return {\n        \"summary\": (\n\
+          \            \"這個助手只能回答「政府專案技術報告」相關技術問題。\\n\\n\"\n            \"可詢問的問題類型：\\\
+          n\"\n            \"- 系統架構如何設計\\n\"\n            \"- 技術規格、API 或資料流程是什麼\\\
+          n\"\n            \"- 部署方式、測試方式、限制與風險\\n\"\n            \"- 改善建議或專案技術差異比較\\\
+          n\\n\"\n            \"範例：某政府專案技術報告的資料流程如何設計？\"\n        )\n    }\n"
+        code_language: python3
+        desc: 回覆知識庫支援範圍與可問問題。
+        outputs:
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 支援範圍說明
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+      height: 80
+      id: clarify_supported_questions
+      position:
+        x: 704
+        y: 257.66666666666663
+      positionAbsolute:
+        x: 704
+        y: 257.66666666666663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(query: str) -> dict:\n    return {\n        \"summary\": (\n\
+          \            \"這個問題與「政府專案技術報告」知識庫範圍不符，因此不會送出查詢。\\n\\n\"\n            \"\
+          請改問政府專案技術報告中的技術內容，例如：\\n\"\n            \"- 某專案的系統架構如何設計？\\n\"\n       \
+          \     \"- 報告中的 API 與資料流程有哪些重點？\\n\"\n            \"- 這個專案的部署限制、測試方式與風險是什麼？\\\
+          n\"\n            \"- 兩個政府專案的技術方案差異在哪裡？\"\n        )\n    }\n"
+        code_language: python3
+        desc: 問題不屬於政府專案技術報告範圍時，直接拒答並提供改問方向。
+        outputs:
+          summary:
+            children: null
+            type: string
+        selected: false
+        title: 不支援問題回覆
+        type: code
+        variables:
+        - value_selector:
+          - start
+          - query
+          value_type: string
+          variable: query
+      height: 96
+      id: unsupported_question_response
+      position:
+        x: 704
+        y: 417.66666666666663
+      positionAbsolute:
+        x: 704
+        y: 417.66666666666663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - compose_final_answer
+          - text
+          value_type: string
+          variable: summary
+        selected: false
+        title: End
+        type: end
+      height: 88
+      id: end
+      position:
+        x: 2756
+        y: 156.66666666666669
+      positionAbsolute:
+        x: 2756
+        y: 156.66666666666669
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - clarify_supported_questions
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 查詢範圍說明
+        type: end
+      height: 88
+      id: clarification_end
+      position:
+        x: 1046
+        y: 267
+      positionAbsolute:
+        x: 1046
+        y: 267
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - unsupported_question_response
+          - summary
+          value_type: string
+          variable: summary
+        selected: false
+        title: 不支援的問題
+        type: end
+      height: 88
+      id: unsupported_end
+      position:
+        x: 1046
+        y: 437.66666666666663
+      positionAbsolute:
+        x: 1046
+        y: 437.66666666666663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 77.99999999999994
+      y: 189.99999999999994
+      zoom: 0.7
+  rag_pipeline_variables: []

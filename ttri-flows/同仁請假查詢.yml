@@ -31,7 +31,7 @@ workflow:
     selector:
     - env
     - LEAVE_API_TOKEN
-    value: ''
+    value: go9xCZWpfPQDo@rY.Ep6nY!A
     value_type: secret
   features:
     file_upload:
@@ -254,14 +254,14 @@ workflow:
           required: true
           type: text-input
           variable: query
-      height: 171
+      height: 155
       id: start
       position:
-        x: 30
-        y: 260
+        x: 0
+        y: 109.55952380952384
       positionAbsolute:
-        x: 30
-        y: 260
+        x: 0
+        y: 109.55952380952384
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -297,14 +297,14 @@ workflow:
         type: question-classifier
         vision:
           enabled: false
-      height: 247
+      height: 263
       id: classify_intent
       position:
-        x: 334
-        y: 260
+        x: 342
+        y: 81.39285714285717
       positionAbsolute:
-        x: 334
-        y: 260
+        x: 342
+        y: 81.39285714285717
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -350,11 +350,11 @@ workflow:
       height: 131
       id: extract_leave_parameters
       position:
-        x: 638
-        y: 160
+        x: 704
+        y: 18.75
       positionAbsolute:
-        x: 638
-        y: 160
+        x: 704
+        y: 18.75
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -449,11 +449,11 @@ workflow:
       height: 79
       id: normalize_parameters
       position:
-        x: 942
-        y: 160
+        x: 1046
+        y: 66.58333333333336
       positionAbsolute:
-        x: 942
-        y: 160
+        x: 1046
+        y: 66.58333333333336
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -479,11 +479,11 @@ workflow:
       height: 175
       id: check_required_parameters
       position:
-        x: 1246
-        y: 160
+        x: 1388
+        y: 31.75
       positionAbsolute:
-        x: 1246
-        y: 160
+        x: 1388
+        y: 31.75
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -521,12 +521,12 @@ workflow:
       height: 193
       id: leave_api_request
       position:
-        x: 1550
-        y: 160
+        x: 1750
+        y: 168
       positionAbsolute:
-        x: 1550
-        y: 160
-      selected: false
+        x: 1750
+        y: 168
+      selected: true
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -621,11 +621,11 @@ workflow:
       height: 95
       id: format_leave_result
       position:
-        x: 1854
-        y: 160
+        x: 2092
+        y: 249.16666666666669
       positionAbsolute:
-        x: 1854
-        y: 160
+        x: 2092
+        y: 249.16666666666669
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -645,11 +645,11 @@ workflow:
       height: 88
       id: missing_parameters_response
       position:
-        x: 1550
-        y: 360
+        x: 1750
+        y: 0
       positionAbsolute:
-        x: 1550
-        y: 360
+        x: 1750
+        y: 0
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -679,7 +679,7 @@ workflow:
             查詢結果：
 
             {{#format_leave_result.summary#}}'
-        selected: true
+        selected: false
         title: 潤飾回覆
         type: llm
         variables: []
@@ -688,12 +688,12 @@ workflow:
       height: 131
       id: polish_leave_answer
       position:
-        x: 2158
-        y: 160
+        x: 2434
+        y: 247
       positionAbsolute:
-        x: 2158
-        y: 160
-      selected: true
+        x: 2434
+        y: 247
+      selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -712,11 +712,11 @@ workflow:
       height: 88
       id: end
       position:
-        x: 2462
-        y: 160
+        x: 2776
+        y: 290.33333333333337
       positionAbsolute:
-        x: 2462
-        y: 160
+        x: 2776
+        y: 290.33333333333337
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -743,11 +743,11 @@ workflow:
       height: 79
       id: clarify_intent_message
       position:
-        x: 638
-        y: 420
+        x: 704
+        y: 229.75
       positionAbsolute:
-        x: 638
-        y: 420
+        x: 704
+        y: 229.75
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -774,11 +774,11 @@ workflow:
       height: 79
       id: unsupported_intent_message
       position:
-        x: 638
-        y: 620
+        x: 704
+        y: 397.75
       positionAbsolute:
-        x: 638
-        y: 620
+        x: 704
+        y: 397.75
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -798,11 +798,11 @@ workflow:
       height: 88
       id: clarify_intent_response
       position:
-        x: 638
-        y: 420
+        x: 1046
+        y: 238.41666666666666
       positionAbsolute:
-        x: 638
-        y: 420
+        x: 1046
+        y: 238.41666666666666
       selected: false
       sourcePosition: right
       targetPosition: left
@@ -822,18 +822,18 @@ workflow:
       height: 88
       id: unsupported_intent_response
       position:
-        x: 638
-        y: 620
+        x: 1046
+        y: 406.41666666666663
       positionAbsolute:
-        x: 638
-        y: 620
+        x: 1046
+        y: 406.41666666666663
       selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
       width: 242
     viewport:
-      x: -808.2999999999997
-      y: 75.20000000000033
-      zoom: 0.6999999999999995
+      x: -1371.8999999999996
+      y: 79.96666666666664
+      zoom: 0.7
   rag_pipeline_variables: []
