@@ -10,7 +10,7 @@ dependencies:
 - current_identifier: null
   type: marketplace
   value:
-    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.50@bcca1b734d9ae24ce8ddb9652bd872d69b91a3ffdb2ff8f8885c6f651da33cb0
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.51@20a0511b3ac00ad81524ff7479b9f5e8bbd456e0590d4931b41c8dd82bee7192
     version: null
 kind: app
 version: 0.6.0
@@ -24,7 +24,7 @@ workflow:
     selector:
     - env
     - EMPLOYEE_DIRECTORY_API_URL
-    value: http://172.16.80.181:8010
+    value: http://172.16.43.49:8010
     value_type: string
   - description: Employee Directory API Bearer token. 若 API 尚未啟用驗證，請留空；啟用後請在 Dify
       環境變數填入 token。
@@ -1139,7 +1139,7 @@ workflow:
       positionAbsolute:
         x: 3138
         y: 402.75952380952384
-      selected: true
+      selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -1170,7 +1170,7 @@ workflow:
       width: 242
     - data:
         dataset_ids:
-        - I7NbZZPEAYGvDEvFbMhL+Ek+KqytuwFUs+eZh2lHPuT5fqiY6r3Z36tyRUiNpjEA
+        - siw1FYZcP776VfNHdQuIZwWg4XQDlhID1KubwANki3DhWBcHEqNbEYPzKjtIFv+z
         desc: 使用原本同仁通訊錄知識庫檢索姓名與分機。
         metadata_filtering_mode: disabled
         multiple_retrieval_config:
@@ -1192,15 +1192,15 @@ workflow:
         type: knowledge-retrieval
         vision:
           enabled: false
-      height: 95
+      height: 133
       id: retrieve_colleague_directory
       position:
         x: 1750
-        y: 570.7833333333333
+        y: 569.354761904762
       positionAbsolute:
         x: 1750
-        y: 570.7833333333333
-      selected: false
+        y: 569.354761904762
+      selected: true
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -1315,7 +1315,7 @@ workflow:
       type: custom
       width: 242
     viewport:
-      x: 140.50000000000063
-      y: 273.70166666666694
+      x: -963.4999999999993
+      y: -94.29833333333318
       zoom: 0.6999999999999997
   rag_pipeline_variables: []

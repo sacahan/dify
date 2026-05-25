@@ -390,18 +390,17 @@ workflow:
           \ return \"\"\n    return str(value).strip()\n\n\ndef _loads(raw):\n   \
           \ if isinstance(raw, dict):\n        return raw\n    if raw is None:\n \
           \       return {}\n    try:\n        return json.loads(str(raw))\n    except\
-          \ Exception:\n        return {}\n\n\ndef _citation_label(item, index):\n\
-          \    if not isinstance(item, dict):\n        return f\"{index}. 無法解析的引用\"\
-          \n    refs = item.get(\"source_refs\") or []\n    ref_text = \"\"\n    if\
-          \ refs and isinstance(refs[0], dict):\n        source_id = refs[0].get(\"\
-          source_id\") or refs[0].get(\"id\") or refs[0].get(\"title\") or \"\"\n\
-          \        source_type = refs[0].get(\"source_type\") or refs[0].get(\"type\"\
-          ) or \"\"\n        ref_text = f\"，source_refs={source_type}:{source_id}\"\
-          .strip(\"，\")\n    return (\n        f\"{index}. documentKey={_text(item.get('documentKey'))\
-          \ or '-'}，\"\n        f\"chunkKey={_text(item.get('chunkKey')) or '-'}，\"\
-          \n        f\"method={_text(item.get('retrievalMethod')) or '-'}，\"\n   \
-          \     f\"score={item.get('score', '-')}{('，' + ref_text) if ref_text else\
-          \ ''}\"\n    )\n\n\ndef main(status_code: int, body: str) -> dict:\n   \
+          \ Exception:\n        return {}\n\n\ndef _attachment_names(refs):\n    names\
+          \ = []\n    for ref in refs:\n        if not isinstance(ref, dict):\n  \
+          \          continue\n        name = _text(ref.get(\"attachmentName\") or\
+          \ ref.get(\"attachment_name\"))\n        if name and name not in names:\n\
+          \            names.append(name)\n    return names\n\n\ndef _citation_label(item,\
+          \ index):\n    if not isinstance(item, dict):\n        return f\"{index}.\
+          \ 無法解析的引用\"\n    refs = item.get(\"source_refs\") or []\n    attachment_text\
+          \ = \"；\".join(_attachment_names(refs)) or \"未提供 attachmentName\"\n   \
+          \ detail = f\"method={_text(item.get('retrievalMethod')) or '-'}，score={item.get('score',\
+          \ '-')}\"\n    return f\"{index}. {attachment_text}（{detail}）\"\n\n\ndef\
+          \ main(status_code: int, body: str) -> dict:\n   \
           \ raw_json = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)\n\
           \    try:\n        status = int(status_code)\n    except Exception:\n  \
           \      status = 0\n\n    if status == 401:\n        return {\n         \
@@ -698,7 +697,7 @@ workflow:
 
             - 若品質為 partial，先回答可被證據支撐的部分，再說明不足之處與補救建議。
 
-            - 若品質為 good 且 matches_intent=true，直接回答使用者問題，並在最後用「參考依據」簡列引用或使用證據。
+            - 若品質為 good 且 matches_intent=true，直接回答使用者問題，並在最後用「參考依據」只列 API body source_refs 的 attachmentName。
 
             - 不要輸出 JSON、XML、原始 API body、推理過程或內部節點名稱。
 
