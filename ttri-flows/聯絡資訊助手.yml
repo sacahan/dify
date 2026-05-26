@@ -24,7 +24,7 @@ workflow:
     selector:
     - env
     - EMPLOYEE_DIRECTORY_API_URL
-    value: http://172.16.43.49:8010
+    value: http://172.16.42.68:8010
     value_type: string
   - description: Employee Directory API Bearer token. 若 API 尚未啟用驗證，請留空；啟用後請在 Dify
       環境變數填入 token。
@@ -341,7 +341,11 @@ workflow:
 
           - 使用者提供姓名、想查分機或電話時，query_direction = name_to_extension。
 
+          - 「王小明分機」、「王小明的分機」、「查王小明分機」都代表用姓名查分機，query_direction = name_to_extension。
+
           - 使用者提供分機號碼、想知道是誰或哪位同仁時，query_direction = extension_to_name。
+
+          - 只有出現 3 到 6 位數字分機，例如「分機 5678 是誰？」時，才判斷為 extension_to_name。
 
           - 使用者想查 Email、電子郵件、部門、員編、員工編號、帳號、同仁資料、聯絡資訊或某部門同仁清單時，query_direction = employee_info。
 
@@ -363,6 +367,8 @@ workflow:
 
           - requested_fields 用逗號列出使用者要查的欄位，例如 email,department,employeeId,employeeAccount,name；若只是要完整同仁資料，填
           all。
+
+          - 職編等於員編，職工編號等於員工編號。
 
           - 不確定的欄位請回傳空字串，不要猜。'
         memory: null
@@ -419,7 +425,7 @@ workflow:
       positionAbsolute:
         x: 342
         y: 59.166666666666686
-      selected: false
+      selected: true
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -462,20 +468,25 @@ workflow:
           \ any(word in text for word in ['聯絡資訊', '同仁資料', '完整資料']):\n        fields.append('all')\n\
           \    return ','.join(fields)\n\n\ndef _direction_from_query(query, direction,\
           \ employee_name, extension_number, employee_id, email, department):\n  \
-          \  normalized = _clean(direction)\n    if normalized in VALID_DIRECTIONS:\n\
-          \        return normalized\n    text = _clean(query)\n    if any(word in\
-          \ text for word in ['怎麼查', '怎麼用', '可以查什麼']):\n        return 'clarification'\n\
-          \    if employee_id or email or department or any(word in text for word\
-          \ in ['Email', 'email', '電子郵件', '部門', '單位', '員編', '員工編號', '帳號', '聯絡資訊',\
-          \ '同仁資料']):\n        return 'employee_info'\n    if extension_number or\
-          \ re.search(r'(?:分機|ext\\.?|extension|電話)\\s*#?\\s*\\d{3,6}', text, flags=re.IGNORECASE):\n\
-          \        return 'extension_to_name'\n    if employee_name or any(word in\
-          \ text for word in ['分機', '電話']):\n        return 'name_to_extension'\n\
-          \    return 'unsupported'\n\n\ndef _api_path(employee_id, employee_name,\
-          \ email, department):\n    if employee_id:\n        return f'/v1/employees/{quote(employee_id)}'\n\
-          \    params = []\n    if employee_name:\n        params.append(f'name={quote(employee_name)}')\n\
-          \    if email:\n        params.append(f'email={quote(email)}')\n    if department:\n\
-          \        params.append(f'department={quote(department)}')\n    params.append('limit=10')\n\
+          \  normalized = _clean(direction)\n    text = _clean(query)\n    has_extension_number\
+          \ = bool(extension_number) or bool(re.search(r'(?:分機|ext\\.?|extension|電話)\\\
+          s*#?\\s*\\d{3,6}', text, flags=re.IGNORECASE))\n    asks_for_extension =\
+          \ any(word in text for word in ['分機', '電話', 'ext', 'extension'])\n    has_name\
+          \ = bool(employee_name) and employee_name not in {'誰', '哪位', '哪一位', '哪個人'}\n\
+          \n    if normalized != 'unsupported' and has_name and asks_for_extension\
+          \ and not has_extension_number:\n        return 'name_to_extension'\n  \
+          \  if normalized in VALID_DIRECTIONS:\n        return normalized\n    if\
+          \ any(word in text for word in ['怎麼查', '怎麼用', '可以查什麼']):\n        return\
+          \ 'clarification'\n    if employee_id or email or department or any(word\
+          \ in text for word in ['Email', 'email', '電子郵件', '部門', '單位', '員編', '員工編號',\
+          \ '帳號', '聯絡資訊', '同仁資料']):\n        return 'employee_info'\n    if has_extension_number:\n\
+          \        return 'extension_to_name'\n    if employee_name or asks_for_extension:\n\
+          \        return 'name_to_extension'\n    return 'unsupported'\n\n\ndef _api_path(employee_id,\
+          \ employee_name, email, department):\n    if employee_id:\n        return\
+          \ f'/v1/employees/{quote(employee_id)}'\n    params = []\n    if employee_name:\n\
+          \        params.append(f'name={quote(employee_name)}')\n    if email:\n\
+          \        params.append(f'email={quote(email)}')\n    if department:\n  \
+          \      params.append(f'department={quote(department)}')\n    params.append('limit=10')\n\
           \    return '/v1/employees/search?' + '&'.join(params)\n\n\ndef main(query:\
           \ str, query_direction: str, employee_name: str, extension_number: str,\
           \ employee_id: str, email: str, department: str, requested_fields: str)\
@@ -1171,6 +1182,7 @@ workflow:
     - data:
         dataset_ids:
         - siw1FYZcP776VfNHdQuIZwWg4XQDlhID1KubwANki3DhWBcHEqNbEYPzKjtIFv+z
+        - sChoxrzNTqmI3e1yiY7hGlWMBnqMk0FuC/viHMQWBBVyHcWfhlrgW8WeIm7PVFkZ
         desc: 使用原本同仁通訊錄知識庫檢索姓名與分機。
         metadata_filtering_mode: disabled
         multiple_retrieval_config:
@@ -1192,7 +1204,7 @@ workflow:
         type: knowledge-retrieval
         vision:
           enabled: false
-      height: 133
+      height: 161
       id: retrieve_colleague_directory
       position:
         x: 1750
@@ -1200,7 +1212,7 @@ workflow:
       positionAbsolute:
         x: 1750
         y: 569.354761904762
-      selected: true
+      selected: false
       sourcePosition: right
       targetPosition: left
       type: custom
@@ -1315,7 +1327,7 @@ workflow:
       type: custom
       width: 242
     viewport:
-      x: -963.4999999999993
-      y: -94.29833333333318
+      x: -1342.4999999999993
+      y: 32.20166666666677
       zoom: 0.6999999999999997
   rag_pipeline_variables: []
