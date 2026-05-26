@@ -7,6 +7,7 @@
 本 compose 會啟動：
 
 - `api`: Dify API service
+- `api_websocket`: workflow collaboration WebSocket service
 - `worker`: Celery worker
 - `worker_beat`: Celery beat 排程服務
 - `web`: Dify frontend
@@ -25,8 +26,8 @@
 
 目前 image 版本固定在：
 
-- `langgenius/dify-api:1.14.1`
-- `langgenius/dify-web:1.14.1`
+- `langgenius/dify-api:1.14.2`
+- `langgenius/dify-web:1.14.2`
 - `langgenius/dify-sandbox:0.2.15`
 - `langgenius/dify-plugin-daemon:0.6.1-local`
 
@@ -40,6 +41,7 @@ flowchart LR
   ReverseProxy --> Nginx["ttri-deploy nginx"]
   Nginx --> Web["web"]
   Nginx --> API["api"]
+  Nginx --> APIWS["api_websocket"]
   API --> Worker["worker"]
   API --> Plugin["plugin_daemon"]
   API --> Sandbox["sandbox"]
@@ -131,6 +133,10 @@ cp .env.example .env
 - `CODE_EXECUTION_API_KEY`
 - `SANDBOX_API_KEY`
 - `NEXT_PUBLIC_SOCKET_URL`
+- `NGINX_SOCKET_IO_UPSTREAM`
+- `API_WEBSOCKET_WORKER_CLASS`
+- `API_WEBSOCKET_WORKER_CONNECTIONS`
+- `API_WEBSOCKET_GUNICORN_TIMEOUT`
 
 `./sandbox/conf/config.yaml` 已提供 baseline 設定，預設 `app.key=dify-sandbox`。若調整 `.env` 的 `SANDBOX_API_KEY` 或 `CODE_EXECUTION_API_KEY`，請同步更新 `config.yaml` 的 `app.key`，三者必須一致。
 
@@ -144,7 +150,7 @@ docker compose up -d
 
 ```bash
 docker compose ps
-docker compose logs -f api worker worker_beat web nginx plugin_daemon
+docker compose logs -f api api_websocket worker worker_beat web nginx plugin_daemon
 ```
 
 啟動後至少確認：
@@ -152,6 +158,7 @@ docker compose logs -f api worker worker_beat web nginx plugin_daemon
 ```bash
 docker compose exec -T api printenv PLUGIN_DAEMON_URL
 docker compose exec -T api getent hosts plugin_daemon
+docker compose exec -T nginx nginx -T | grep socket_io_upstream
 docker compose logs --tail=120 plugin_daemon sandbox
 ```
 
@@ -159,6 +166,7 @@ docker compose logs --tail=120 plugin_daemon sandbox
 
 - `PLUGIN_DAEMON_URL` 應為 `http://plugin_daemon:5002`
 - `getent hosts plugin_daemon` 應回傳 Docker network 內的 IP
+- `socket_io_upstream` 應指向 `api_websocket:5001`
 - `plugin_daemon` 與 `sandbox` 不應停在 `Restarting`
 
 停止：

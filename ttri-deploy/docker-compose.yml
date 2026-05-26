@@ -3,7 +3,7 @@
 # Dify 精簡部署套件
 #   外部依賴：PostgreSQL + Redis + Weaviate
 #   向量資料庫：Weaviate（172.16.42.84:8080 REST/GraphQL, 172.16.42.84:50051 gRPC）
-#   包含：api、worker、worker_beat、web、nginx、sandbox、ssrf_proxy、plugin_daemon
+#   包含：api、api_websocket、worker、worker_beat、web、nginx、sandbox、ssrf_proxy、plugin_daemon
 #   Host 需要新建的目錄：./app/storage、./plugin_daemon、./nginx/conf.d、./nginx/ssl、./sandbox/dependencies、./sandbox/conf、./ssrf_proxy
 #
 # 啟動方式（在本目錄下執行）：
@@ -42,7 +42,7 @@ services:
 
   # API 服務
   api:
-    image: langgenius/dify-api:1.14.1
+    image: langgenius/dify-api:1.14.2
     restart: always
     env_file: .env
     environment:
@@ -68,9 +68,25 @@ services:
       - ssrf_proxy_network
       - ttri-network
 
+  # Workflow collaboration WebSocket 服務
+  api_websocket:
+    image: langgenius/dify-api:1.14.2
+    restart: always
+    env_file: .env
+    environment:
+      MODE: api
+      SERVER_WORKER_AMOUNT: 1
+      SERVER_WORKER_CLASS: ${API_WEBSOCKET_WORKER_CLASS:-geventwebsocket.gunicorn.workers.GeventWebSocketWorker}
+      SERVER_WORKER_CONNECTIONS: ${API_WEBSOCKET_WORKER_CONNECTIONS:-1000}
+      GUNICORN_TIMEOUT: ${API_WEBSOCKET_GUNICORN_TIMEOUT:-360}
+    networks:
+      - default
+      - ssrf_proxy_network
+      - ttri-network
+
   # Celery Worker（處理所有任務佇列）
   worker:
-    image: langgenius/dify-api:1.14.1
+    image: langgenius/dify-api:1.14.2
     restart: always
     env_file: .env
     environment:
@@ -89,7 +105,7 @@ services:
 
   # Celery Beat（排程週期性任務）
   worker_beat:
-    image: langgenius/dify-api:1.14.1
+    image: langgenius/dify-api:1.14.2
     restart: always
     env_file: .env
     environment:
@@ -104,7 +120,7 @@ services:
 
   # 前端 Web 應用
   web:
-    image: langgenius/dify-web:1.14.1
+    image: langgenius/dify-web:1.14.2
     restart: always
     env_file: .env
 
@@ -126,6 +142,7 @@ services:
     env_file: .env
     depends_on:
       - api
+      - api_websocket
       - web
     ports:
       - "${EXPOSE_NGINX_PORT:-8160}:${NGINX_PORT:-80}"
